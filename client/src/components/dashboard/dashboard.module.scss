@@ -1,0 +1,498 @@
+@mixin transition-base {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(243, 202, 64, 0.5);
+  }
+}
+
+@mixin active-scale {
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.dashboard {
+  min-height: 100vh;
+  background: var(--color-dark-green);
+}
+
+.main {
+  padding-top: 6rem;
+  padding-bottom: 2rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  @media (min-width: 640px) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.container {
+  max-width: 95rem;
+  margin: 0 auto;
+}
+
+.pageHeader {
+  margin-bottom: 1.5rem;
+}
+
+.pageTitle {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+
+  @media (min-width: 768px) {
+    font-size: 1.875rem;
+  }
+}
+
+.pageSubtitle {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.tabBar {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.tabButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  background: rgba(84, 67, 67, 0.5);
+  color: #9ca3af;
+
+  &:hover {
+    background: rgba(84, 67, 67, 0.8);
+    color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(243, 202, 64, 0.5);
+  }
+}
+
+.tabButtonActive {
+  composes: tabButton;
+  background: #F3CA40;
+  color: #002500;
+
+  &:hover {
+    background: #e6b82e;
+    color: #002500;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+  }
+}
+
+.sidebar {
+  flex-shrink: 0;
+  width: 100%;
+
+  @media (min-width: 1024px) {
+    width: 18rem;
+  }
+}
+
+.results {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.card {
+  background: rgba(84, 67, 67, 0.6);
+  border: 1px solid rgba(215, 192, 208, 0.5);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  @include transition-base;
+  @include hover-lift;
+  @include focus-ring;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 1.25rem;
+}
+
+// Input Form Styles
+.inputForm {
+  composes: card;
+}
+
+.inputFormTitle {
+  composes: cardTitle;
+}
+
+.inputScrollArea {
+  max-height: calc(100vh - 16rem);
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.inputGroup {
+  margin-bottom: 1rem;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9ca3af;
+  margin-bottom: 0.375rem;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 37, 0, 0.5);
+  border: 1px solid rgba(215, 192, 208, 0.3);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #ffffff;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba(215, 192, 208, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #F3CA40;
+    box-shadow: 0 0 0 2px rgba(243, 202, 64, 0.3);
+  }
+
+  &::placeholder {
+    color: rgba(156, 163, 175, 0.5);
+  }
+}
+
+.submitButton {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  margin-top: 1rem;
+  background: #F3CA40;
+  color: #002500;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  @include transition-base;
+  @include focus-ring;
+  @include active-scale;
+
+  &:hover:not(:disabled) {
+    background: #e6b82e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(243, 202, 64, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.submitButtonLoading {
+  composes: submitButton;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+// Prediction Result Styles
+.resultCard {
+  composes: card;
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.resultHeaderLeft {
+  flex: 1;
+}
+
+.resultTitle {
+  composes: cardTitle;
+  margin-bottom: 0.25rem;
+}
+
+.resultMessage {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.riskBadge {
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.riskBadgeLow {
+  composes: riskBadge;
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.riskBadgeMedium {
+  composes: riskBadge;
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+}
+
+.riskBadgeHigh {
+  composes: riskBadge;
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.chartContainer {
+  padding: 1.25rem;
+  background: rgba(0, 37, 0, 0.4);
+  border-radius: 0.5rem;
+}
+
+// Stats Grid Styles
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.statCard {
+  background: rgba(84, 67, 67, 0.6);
+  border: 1px solid rgba(215, 192, 208, 0.5);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  @include transition-base;
+  @include hover-lift;
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.statIcon {
+  font-size: 1.25rem;
+}
+
+.statTrend {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statTrendPositive {
+  composes: statTrend;
+  color: #4ade80;
+}
+
+.statTrendNegative {
+  composes: statTrend;
+  color: #f87171;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+// Recent Activity Table Styles
+.tableCard {
+  composes: card;
+}
+
+.tableTitle {
+  composes: cardTitle;
+  margin-bottom: 1.25rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.tableHead {
+  border-bottom: 1px solid rgba(215, 192, 208, 0.5);
+}
+
+.tableHeader {
+  text-align: left;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.tableBody {
+  tr {
+    border-bottom: 1px solid rgba(215, 192, 208, 0.3);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.tableCell {
+  padding: 0.5rem 0.5rem;
+  white-space: nowrap;
+}
+
+.tableCellId {
+  composes: tableCell;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.tableCellText {
+  composes: tableCell;
+  color: #9ca3af;
+}
+
+.tableCellRisk,
+.tableCellStatus {
+  composes: tableCell;
+}
+
+.riskTag {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.riskTagLow {
+  composes: riskTag;
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.riskTagMedium {
+  composes: riskTag;
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+}
+
+.riskTagHigh {
+  composes: riskTag;
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.statusTag {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusTagApproved {
+  composes: statusTag;
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.statusTagDenied {
+  composes: statusTag;
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.statusTagReview {
+  composes: statusTag;
+  background: rgba(234, 179, 8, 0.2);
+  color: #facc15;
+}
+
+// Spinner
+.spinner {
+  animation: spin 1s linear infinite;
+  height: 1rem;
+  width: 1rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

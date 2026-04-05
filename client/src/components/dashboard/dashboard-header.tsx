@@ -1,5 +1,8 @@
 "use client";
 
+import cn from "classnames";
+import styles from "./dashboard.module.scss";
+
 interface DashboardHeaderProps {
   title: string;
   subtitle: string;
@@ -7,18 +10,24 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-dark">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-green/90 backdrop-blur-md border-b border-card-border/30">
+      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
         <a href="/" className="flex items-center space-x-3">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">CC</span>
+          <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-dark-green font-bold text-sm">CC</span>
           </div>
-          <span className="font-display font-bold text-xl text-white">CredsCore</span>
+          <span className="font-display font-bold text-lg text-white">{title}</span>
         </a>
         <div className="flex items-center space-x-6">
-          <a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a>
-          <a href="/dashboard" className="text-white font-semibold">Dashboard</a>
-          <a href="/docs" className="text-gray-300 hover:text-white transition-colors">Docs</a>
+          <a href="/" className="text-gray-400 hover:text-primary transition-colors duration-200">
+            Home
+          </a>
+          <a href="/dashboard" className="text-primary font-medium">
+            Dashboard
+          </a>
+          <a href="/docs" className="text-gray-400 hover:text-primary transition-colors duration-200">
+            Docs
+          </a>
         </div>
       </div>
     </nav>
@@ -32,9 +41,9 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle }: PageHeaderProps) {
   return (
-    <div className="mb-8 flex flex-col">
-      <h1 className="font-display text-4xl font-bold text-white mb-2">{title}</h1>
-      <p className="text-gray-400">{subtitle}</p>
+    <div className={styles.pageHeader}>
+      <h1 className={styles.pageTitle}>{title}</h1>
+      <p className={styles.pageSubtitle}>{subtitle}</p>
     </div>
   );
 }
@@ -47,14 +56,14 @@ interface TabBarProps {
 
 export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
   return (
-    <div className="flex space-x-2 mb-8 items-center">
+    <div className={styles.tabBar}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`px-6 py-3 rounded-full font-medium transition-all duration-300 flex items-center justify-center space-x-2 ${
-            activeTab === tab.id ? "gradient-primary text-white shadow-lg" : "glass text-gray-300 hover:bg-white/10"
-          }`}
+          className={cn(
+            activeTab === tab.id ? styles.tabButtonActive : styles.tabButton
+          )}
         >
           <span>{tab.icon}</span>
           <span>{tab.label}</span>
