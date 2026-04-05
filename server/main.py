@@ -4,16 +4,21 @@ import joblib
 import os
 import pandas as pd
 import numpy as np
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.models import ClientData, CreditApplicationRequest, RiskAssessmentResponse, PolicyAssessment
 from app.policy import assess_risk
 from app.transforms import safe_log
 from app.faiss_index import FAISSCreditIndex
+from pydantic import BaseModel, Field
 
-app = FastAPI(title="Credit Risk Prediction API", description="Production-grade credit risk system with ML estimation + policy decision engine", version="3.0.0")
+app = FastAPI(
+    title="Credit Risk Prediction API",
+    description="Production-grade credit risk system with ML estimation + policy decision engine + RGCN feature factory",
+    version="4.0.0",
+)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
-model, explainer, feature_names, faiss_index_val = None, None, None, None
+model, explainer, feature_names, faiss_index_val, rgcn_factory, rgcn_features = None, None, None, None, None, {}
 
 FEATURE_MAP = {
     'RevolvingUtilizationOfUnsecuredLines': 'RevolvingUtilizationOfUnsecuredLines', 'age': 'age',
@@ -23,8 +28,20 @@ FEATURE_MAP = {
     'NumberOfTime60_89DaysPastDueNotWorse': 'NumberOfTime60-89DaysPastDueNotWorse', 'NumberOfDependents': 'NumberOfDependents'
 }
 
+class RGCNFeaturesResponse(BaseModel):
+    embeddings: List[float]
+    similarity_mean: float
+    similarity_max: float
+    similarity_min: float
+    similarity_std: float
+    feature_count: int
+
+class EnhancedPredictRequest(BaseModel):
+    cd: ClientData
+    use_rgcn: bool = False
+
 def load_models():
-    global model, explainer, feature_names, faiss_index_val
+    global model, explainer, feature_names, faiss_index_val, rgcn_factory, rgcn_features
     md = os.path.join(os.path.dirname(__file__), 'app', 'saved_models')
     model = joblib.load(os.path.join(md, 'lightgbm_credit_model.pkl'))
     explainer = joblib.load(os.path.join(md, 'shap_explainer.pkl'))
@@ -32,21 +49,69 @@ def load_models():
     faiss_index_val = FAISSCreditIndex()
     faiss_index_val.load_index(md)
 
+    rgcn_path = os.path.join(md, 'rgcn_meta.pkl')
+    rgcn_model_path = os.path.join(md, 'rgcn_model.pt')
+    if os.path.exists(rgcn_path) and os.path.exists(rgcn_model_path):
+        try:
+            from app.rgcn.feature_factory import RGCNFeatureFactory
+            rgcn_factory = RGCNFeatureFactory()
+            rgcn_factory.load(md)
+            rgcn_features = rgcn_factory.feature_names or []
+        except Exception as e:
+            print(f"Warning: Could not load RGCN model: {e}")
+
 @app.on_event("startup")
 async def startup():
     load_models()
 
 @app.get("/")
 def root():
-    return {"message": "Credit Risk Prediction API", "version": "3.0.0", "design": "ML Risk Estimation + Policy Decision Engine", "endpoints": {"/health": "Health check", "/predict": "Predict (POST)", "/assess": "Full risk assessment with policy (POST)", "/policy-info": "Policy configuration", "/similar-applicants": "Similar applicants (POST)", "/explain-denial": "Explain denial (POST)", "/thin-file-predict": "Thin-file prediction (POST)", "/monitor-drift": "Monitor drift (POST)", "/peer-groups": "Peer groups (POST)"}}
+    return {
+        "message": "Credit Risk Prediction API",
+        "version": "4.0.0",
+        "design": "ML Risk Estimation + Policy Decision Engine + RGCN Feature Factory",
+        "endpoints": {
+            "/health": "Health check",
+            "/predict": "Predict (POST)",
+            "/enhanced-predict": "Predict with optional RGCN features (POST)",
+            "/assess": "Full risk assessment with policy (POST)",
+            "/policy-info": "Policy configuration",
+            "/similar-applicants": "Similar applicants (POST)",
+            "/explain-denial": "Explain denial (POST)",
+            "/thin-file-predict": "Thin-file prediction (POST)",
+            "/monitor-drift": "Monitor drift (POST)",
+            "/peer-groups": "Peer groups (POST)",
+            "/rgcn-features": "Get RGCN-extracted features (POST)",
+            "/rgcn-info": "RGCN model information",
+        },
+    }
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "model_loaded": model is not None, "faiss_loaded": faiss_index_val is not None}
+    rgcn_loaded = rgcn_factory is not None and getattr(rgcn_factory, 'is_loaded', False)
+    return {
+        "status": "healthy",
+        "model_loaded": model is not None,
+        "faiss_loaded": faiss_index_val is not None,
+        "rgcn_loaded": rgcn_loaded,
+    }
 
 @app.get("/model-info")
 def info():
-    return {"model_type": "LightGBM + FAISS", "features_count": len(feature_names) or 0, "features": feature_names or [], "faiss_size": faiss_index_val.index.ntotal if faiss_index_val and faiss_index_val.index else 0}
+    rgcn_info = None
+    if rgcn_factory and getattr(rgcn_factory, 'is_loaded', False):
+        rgcn_info = {
+            "loaded": True,
+            "embedding_dim": rgcn_factory.embedding_dim,
+            "graph_nodes": int(rgcn_factory.graph_data["applicant"].x.size(0)) if rgcn_factory.graph_data else 0,
+        }
+    return {
+        "model_type": "LightGBM + FAISS + RGCN",
+        "features_count": len(feature_names) or 0,
+        "features": feature_names or [],
+        "faiss_size": faiss_index_val.index.ntotal if faiss_index_val and faiss_index_val.index else 0,
+        "rgcn": rgcn_info,
+    }
 
 def to_dataframe(cd: ClientData):
     data = {tn: getattr(cd, fn) for fn, tn in FEATURE_MAP.items()}
@@ -69,6 +134,49 @@ def predict(cd: ClientData):
         idx = np.argsort(np.abs(vals))[::-1][:5]
         factors = [{"feature": feature_names[i], "shap_value": float(vals[i]), "impact": "increases_risk" if vals[i] > 0 else "decreases_risk"} for i in idx]
         return {"prediction": 1 if prob > 0.5 else 0, "default_probability": prob, "risk_level": "high" if prob > 0.5 else "medium" if prob > 0.3 else "low", "message": "High risk - declined" if prob > 0.5 else "Low risk - approved", "top_risk_factors": factors}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/enhanced-predict")
+def enhanced_predict(req: EnhancedPredictRequest):
+    try:
+        cd = req.cd
+        df = to_dataframe(cd)
+        prob = float(model.predict(df)[0])
+
+        rgcn_result = None
+        rgcn_prob = None
+
+        if req.use_rgcn and rgcn_factory and rgcn_factory.is_loaded:
+            augmented, aug_names = rgcn_factory.extract_features(df)
+            aug_df = pd.DataFrame(augmented, columns=aug_names)
+            rgcn_prob = float(model.predict(aug_df)[0])
+
+            emb = rgcn_factory.get_embedding_only(df)
+            rgcn_result = {
+                "embeddings": emb[0].tolist(),
+                "similarity_mean": float(augmented[0][-4]),
+                "similarity_max": float(augmented[0][-3]),
+                "similarity_min": float(augmented[0][-2]),
+                "similarity_std": float(augmented[0][-1]),
+            }
+
+        sv = get_shap(explainer.shap_values(df))
+        vals = sv.flatten()
+        idx = np.argsort(np.abs(vals))[::-1][:5]
+        factors = [{"feature": feature_names[i], "shap_value": float(vals[i]), "impact": "increases_risk" if vals[i] > 0 else "decreases_risk"} for i in idx]
+
+        final_prob = rgcn_prob if rgcn_prob is not None else prob
+
+        return {
+            "prediction": 1 if final_prob > 0.5 else 0,
+            "default_probability": final_prob,
+            "base_probability": prob,
+            "rgcn_probability": rgcn_prob,
+            "rgcn_features": rgcn_result,
+            "risk_level": "high" if final_prob > 0.5 else "medium" if final_prob > 0.3 else "low",
+            "top_risk_factors": factors,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -148,48 +256,38 @@ def peers(data: List[Dict[str, Any]], n_clusters: int = 5):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ============================================================
-# Enhanced Risk Assessment Endpoint (Layer 1 + Layer 2)
-# Separates ML risk estimation from policy decision making
-# ============================================================
-
 @app.post("/assess", response_model=RiskAssessmentResponse)
 def assess(application: CreditApplicationRequest):
-    """
-    Full risk assessment combining ML estimation (Layer 1) and policy decision (Layer 2).
-    
-    Layer 1: ML model estimates continuous risk probability
-    Layer 2: Policy engine converts risk into approve/review/decline decision
-    
-    This separation enables:
-    - Models can be retrained without changing policies
-    - Policies can be updated for compliance without retraining
-    - Full audit trail of both risk estimate and decision
-    """
     try:
-        # === LAYER 1: ML Risk Estimation ===
         cd = ClientData(**application.dict(exclude={"credit_report", "financial_stability", "structural_profile"}))
         df = to_dataframe(cd)
-        
-        # Apply log-space transformation to MonthlyIncome
+
         income_log = safe_log(application.MonthlyIncome)
         if "MonthlyIncome" in df.columns:
             df["MonthlyIncome"] = income_log
-        
-        risk_score = float(model.predict(df)[0])
-        
-        # Get SHAP explanations
+
+        rgcn_augmented = False
+        if rgcn_factory and rgcn_factory.is_loaded:
+            try:
+                augmented, aug_names = rgcn_factory.extract_features(df)
+                aug_df = pd.DataFrame(augmented, columns=aug_names)
+                risk_score = float(model.predict(aug_df)[0])
+                rgcn_augmented = True
+            except Exception:
+                risk_score = float(model.predict(df)[0])
+        else:
+            risk_score = float(model.predict(df)[0])
+
         sv = get_shap(explainer.shap_values(df))
         vals = sv.flatten()
         idx = np.argsort(np.abs(vals))[::-1][:5]
         factors = [{"feature": feature_names[i], "shap_value": float(vals[i]), "impact": "increases_risk" if vals[i] > 0 else "decreases_risk"} for i in idx]
-        
-        # === LAYER 2: Policy Decision ===
+
         monthly_income = application.get_monthly_income()
         recent_inquiries = application.get_recent_inquiries()
         employment_tenure = application.get_employment_tenure()
         requested_amount = application.get_requested_amount()
-        
+
         policy_result = assess_risk(
             risk_score=risk_score,
             monthly_income=monthly_income,
@@ -198,29 +296,30 @@ def assess(application: CreditApplicationRequest):
             recent_inquiries=recent_inquiries,
             requested_amount=requested_amount
         )
-        
-        # Build human-readable summaries
+
         grade = policy_result["risk_grade"]
         decision = policy_result["decision"]
-        
+
         decision_messages = {
             "APPROVE": f"Approved with Grade {grade} credit profile.",
             "REVIEW": f"Requires manual review - Grade {grade} profile.",
             "DECLINE": f"Declined - Grade {grade} exceeds risk tolerance."
         }
-        
+
         tier_message = decision_messages.get(decision, f"Grade {grade} - {decision}")
-        
-        income_str = f"₦{monthly_income:,.0f}" if monthly_income > 0 else "Not provided"
-        max_str = f"₦{policy_result['recommended_max_amount']:,.0f}" if policy_result.get("recommended_max_amount") else "N/A"
-        
+
+        income_str = f"{monthly_income:,.0f}" if monthly_income > 0 else "Not provided"
+        max_str = f"{policy_result['recommended_max_amount']:,.0f}" if policy_result.get("recommended_max_amount") else "N/A"
+
+        rgcn_note = " (enhanced with graph features)" if rgcn_augmented else ""
+
         human_summary = (
-            f"Risk score: {risk_score:.1%} | Grade {grade} | Decision: {decision}. "
+            f"Risk score: {risk_score:.1%}{rgcn_note} | Grade {grade} | Decision: {decision}. "
             f"Monthly income: {income_str}. "
             f"Recommended max loan: {max_str} at {policy_result['interest_rate']}% interest. "
             f"{'Conditions: ' + '; '.join(policy_result['conditions']) if policy_result['conditions'] else ''}"
         )
-        
+
         return RiskAssessmentResponse(
             risk_score=risk_score,
             default_probability=risk_score,
@@ -233,9 +332,67 @@ def assess(application: CreditApplicationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/rgcn-features", response_model=RGCNFeaturesResponse)
+def get_rgcn_features(cd: ClientData):
+    """
+    Get RGCN-extracted features for an applicant.
+
+    This endpoint uses the RGCN feature factory to extract
+    graph-based embeddings and similarity scores. These features
+    can be used to augment predictions in downstream models.
+
+    Separation of concerns: Returns FEATURES ONLY - not predictions or decisions.
+    """
+    if not rgcn_factory or not rgcn_factory.is_loaded:
+        raise HTTPException(status_code=503, detail="RGCN model not available")
+
+    try:
+        df = to_dataframe(cd)
+        augmented, _ = rgcn_factory.extract_features(df)
+        emb = rgcn_factory.get_embedding_only(df)
+
+        embedding_dim = rgcn_factory.embedding_dim
+        embeddings = emb[0].tolist()
+
+        return RGCNFeaturesResponse(
+            embeddings=embeddings,
+            similarity_mean=float(augmented[0][-4]),
+            similarity_max=float(augmented[0][-3]),
+            similarity_min=float(augmented[0][-2]),
+            similarity_std=float(augmented[0][-1]),
+            feature_count=len(embeddings) + 4,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/rgcn-info")
+def rgcn_info():
+    """Get information about the loaded RGCN model."""
+    if not rgcn_factory or not rgcn_factory.is_loaded:
+        return {"loaded": False, "message": "RGCN model not loaded"}
+
+    graph_data = rgcn_factory.graph_data
+    num_nodes = int(graph_data["applicant"].x.size(0)) if graph_data else 0
+
+    edge_info = {}
+    for rel_key in graph_data.edge_types:
+        if rel_key[0] == rel_key[2]:
+            key = f"{rel_key[1]}"
+            edges = graph_data[rel_key].edge_index
+            edge_info[key] = int(edges.size(1))
+
+    return {
+        "loaded": True,
+        "embedding_dim": rgcn_factory.embedding_dim,
+        "graph_nodes": num_nodes,
+        "relations": edge_info,
+        "feature_names": rgcn_factory.feature_names or [],
+    }
+
+
 @app.get("/policy-info")
 def policy_info():
-    """Get information about the current policy configuration."""
     from app.policy import DEFAULT_TIERS, Decision, RiskGrade
     tiers = [
         {
