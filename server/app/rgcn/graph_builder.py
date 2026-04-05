@@ -30,10 +30,13 @@ class GraphBuilder:
         income_threshold: float = 0.1,
         age_threshold: int = 5,
         credit_similarity_threshold: float = 0.3,
+        random_seed: int = 42,
     ):
         self.income_threshold = income_threshold
         self.age_threshold = age_threshold
         self.credit_similarity_threshold = credit_similarity_threshold
+        self.random_seed = random_seed
+        self.rng = np.random.default_rng(random_seed)
         self.scaler = StandardScaler()
         self.feature_names = None
         self.node_features = None
@@ -110,7 +113,7 @@ class GraphBuilder:
             indices = np.where(mask)[0]
             if len(indices) > 1:
                 sample_size = min(len(indices), 50)
-                sampled = np.random.choice(indices, size=sample_size, replace=False)
+                sampled = self.rng.choice(indices, size=sample_size, replace=False)
                 gi, gj = np.meshgrid(sampled, sampled)
                 mask_diag = gi != gj
                 rows.append(gi[mask_diag])
@@ -136,7 +139,7 @@ class GraphBuilder:
             indices = np.where(mask)[0]
             if len(indices) > 1:
                 sample_size = min(len(indices), 50)
-                sampled = np.random.choice(indices, size=sample_size, replace=False)
+                sampled = self.rng.choice(indices, size=sample_size, replace=False)
                 gi, gj = np.meshgrid(sampled, sampled)
                 mask_diag = gi != gj
                 rows.append(gi[mask_diag])
@@ -149,8 +152,8 @@ class GraphBuilder:
             upper_idx = np.where(upper_mask)[0]
             if len(lower_idx) > 0 and len(upper_idx) > 0:
                 n_links = min(len(lower_idx), len(upper_idx), 20)
-                lower_sample = np.random.choice(lower_idx, size=n_links, replace=len(lower_idx) < n_links)
-                upper_sample = np.random.choice(upper_idx, size=n_links, replace=len(upper_idx) < n_links)
+                lower_sample = self.rng.choice(lower_idx, size=n_links, replace=len(lower_idx) < n_links)
+                upper_sample = self.rng.choice(upper_idx, size=n_links, replace=len(upper_idx) < n_links)
                 rows.append(lower_sample)
                 cols.append(upper_sample)
 
