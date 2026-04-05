@@ -1,76 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import cn from "classnames";
 import { api, ApplicantData } from "@/lib/api";
+import styles from "./dashboard.module.scss";
 
 interface InputFormProps {
-  formData: Record<string, number>;
-  onFormDataChange: (data: Record<string, number>) => void;
+  formData: ApplicantData;
+  onFormDataChange: (data: ApplicantData) => void;
   onResult: (result: any) => void;
   isLoading: boolean;
   onLoadingChange: (loading: boolean) => void;
 }
 
-const DEFAULT_FORM_DATA = {
-  RevolvingUtilizationOfUnsecuredLines: 0.766,
-  age: 45,
-  NumberOfTime30_59DaysPastDueNotWorse: 2,
-  DebtRatio: 0.803,
-  MonthlyIncome: 9120,
-  NumberOfOpenCreditLinesAndLoans: 13,
-  NumberOfTimes90DaysLate: 0,
-  NumberRealEstateLoansOrLines: 6,
-  NumberOfTime60_89DaysPastDueNotWorse: 0,
-  NumberOfDependents: 2,
-};
-
-const MOCK_RESULT = {
-  prediction: 0,
-  default_probability: 0.3427,
-  risk_level: "medium",
-  message: "Low risk - approved",
-  top_risk_factors: [
-    { feature: "NumberOfTime30-59DaysPastDueNotWorse", shap_value: 0.9805, impact: "increases_risk" },
-    { feature: "RevolvingUtilizationOfUnsecuredLines", shap_value: 0.9103, impact: "increases_risk" },
-    { feature: "NumberRealEstateLoansOrLines", shap_value: 0.6498, impact: "increases_risk" },
-    { feature: "DebtRatio", shap_value: 0.3053, impact: "increases_risk" },
-    { feature: "NumberOfTimes90DaysLate", shap_value: -0.1003, impact: "decreases_risk" },
-  ],
-};
-
 export function InputForm({ formData, onFormDataChange, onResult, isLoading, onLoadingChange }: InputFormProps) {
   const handleSubmit = async () => {
     onLoadingChange(true);
     try {
-      const data: ApplicantData = Object.fromEntries(
-        Object.entries(formData).map(([key, value]) => [key, value])
-      ) as unknown as ApplicantData;
-      const response = await api.predict(data);
+      const response = await api.predict(formData);
       onResult(response);
     } catch {
-      onResult(MOCK_RESULT);
+      onResult({
+        prediction: 0,
+        default_probability: 0.3427,
+        risk_level: "medium",
+        message: "Low risk - approved",
+        top_risk_factors: [
+          { feature: "RevolvingUtilizationOfUnsecuredLines", shap_value: 0.9103, impact: "increases_risk" },
+          { feature: "NumberOfTime30-59DaysPastDueNotWorse", shap_value: 0.9805, impact: "increases_risk" },
+          { feature: "NumberRealEstateLoansOrLines", shap_value: 0.6498, impact: "increases_risk" },
+        ],
+      });
     }
     onLoadingChange(false);
   };
 
-  const handleFieldChange = (key: string, value: string) => {
+  const handleFieldChange = (key: keyof ApplicantData, value: string) => {
     onFormDataChange({ ...formData, [key]: parseFloat(value) || 0 });
   };
 
+  const formatLabel = (key: string) => {
+    return key.replace(/([A-Z])/g, " $1")
+      .replace(/(\d+)([A-Z])/g, "$1 $2")
+      .replace(/(\d),(\d)/g, "$1-$2")
+      .trim();
+  };
+
   return (
-    <div className="card sticky top-28">
-      <h2 className="font-display text-2xl font-bold text-white mb-6">Applicant Data</h2>
-      <div className="space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2">
+    <div className={styles.inputForm}>
+      <h2 className={styles.inputFormTitle}>Applicant Data</h2>
+      <div className={styles.inputScrollArea}>
         {Object.entries(formData).map(([key, value]) => (
-          <div key={key} className="flex flex-col">
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              {key.replace(/([A-Z])/g, " $1").trim()}
+          <div key={key} className={styles.inputGroup}>
+            <label className={styles.inputLabel}>
+              {formatLabel(key)}
             </label>
             <input
               type="number"
               value={value}
-              onChange={(e) => handleFieldChange(key, e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-card-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300 bg-card-bg text-white text-left"
+              onChange={(e) => handleFieldChange(key as keyof ApplicantData, e.target.value)}
+              className={styles.inputField}
+              step="any"
             />
           </div>
         ))}
@@ -78,11 +67,14 @@ export function InputForm({ formData, onFormDataChange, onResult, isLoading, onL
       <button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full mt-6 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        className={cn(
+          styles.submitButton,
+          isLoading && styles.submitButtonLoading
+        )}
       >
         {isLoading ? (
-          <span className="flex items-center justify-center space-x-2">
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+          <span className="flex items-center justify-center gap-2">
+            <svg className={styles.spinner} viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
