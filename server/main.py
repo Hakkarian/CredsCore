@@ -109,7 +109,7 @@ def info():
         "model_type": "LightGBM + FAISS + RGCN",
         "features_count": len(feature_names) or 0,
         "features": feature_names or [],
-        "faiss_size": faiss_index_val.index.ntotal if faiss_index_val and faiss_index_val.index else 0,
+        "faiss_index_size": faiss_index_val.index.ntotal if faiss_index_val and faiss_index_val.index else 0,
         "rgcn": rgcn_info,
     }
 
@@ -124,11 +124,18 @@ def to_dataframe(cd: ClientData):
 def get_shap(shap_vals):
     return shap_vals[1] if isinstance(shap_vals, list) and len(shap_vals) == 2 else shap_vals
 
+
+def get_probability(df: pd.DataFrame) -> float:
+    if hasattr(model, "predict_proba"):
+        return float(model.predict_proba(df)[:, 1][0])
+    return float(model.predict(df)[0])
+
+
 @app.post("/predict")
 def predict(cd: ClientData):
     try:
         df = to_dataframe(cd)
-        prob = float(model.predict(df)[0])
+        prob = get_probability(df)
         sv = get_shap(explainer.shap_values(df))
         vals = sv.flatten()
         idx = np.argsort(np.abs(vals))[::-1][:5]
@@ -142,7 +149,7 @@ def enhanced_predict(req: EnhancedPredictRequest):
     try:
         cd = req.cd
         df = to_dataframe(cd)
-        prob = float(model.predict(df)[0])
+        prob = get_probability(df)
 
         rgcn_result = None
         rgcn_prob = None
@@ -150,7 +157,7 @@ def enhanced_predict(req: EnhancedPredictRequest):
         if req.use_rgcn and rgcn_factory and rgcn_factory.is_loaded:
             augmented, aug_names = rgcn_factory.extract_features(df)
             aug_df = pd.DataFrame(augmented, columns=aug_names)
-            rgcn_prob = float(model.predict(aug_df)[0])
+            rgcn_prob = get_probability(aug_df)
 
             emb = rgcn_factory.get_embedding_only(df)
             rgcn_result = {
@@ -195,7 +202,7 @@ def similar(cd: ClientData, k: int = 10):
 def explain_denial(cd: ClientData, k: int = 20):
     try:
         df = to_dataframe(cd)
-        prob = float(model.predict(df)[0])
+        prob = get_probability(df)
         sv = get_shap(explainer.shap_values(df))
         result = faiss_index_val.explain_denial_with_similar_approved(df, sv, feature_names, k=k)
         reasons = [f['feature'] for f in result['top_risk_factors'][:3]]
@@ -209,7 +216,7 @@ def explain_denial(cd: ClientData, k: int = 20):
 def thin_file(cd: ClientData, k: int = 5):
     try:
         df = to_dataframe(cd)
-        base = float(model.predict(df)[0])
+        base = get_probability(df)
         ni = faiss_index_val.get_neighbor_features(df, k=k)
         nr = ni['weighted_neighbor_risk']
         dc = 1.0 / (1.0 + ni['avg_neighbor_distance'])
@@ -271,12 +278,12 @@ def assess(application: CreditApplicationRequest):
             try:
                 augmented, aug_names = rgcn_factory.extract_features(df)
                 aug_df = pd.DataFrame(augmented, columns=aug_names)
-                risk_score = float(model.predict(aug_df)[0])
+                risk_score = get_probability(aug_df)
                 rgcn_augmented = True
             except Exception:
-                risk_score = float(model.predict(df)[0])
+                risk_score = get_probability(df)
         else:
-            risk_score = float(model.predict(df)[0])
+            risk_score = get_probability(df)
 
         sv = get_shap(explainer.shap_values(df))
         vals = sv.flatten()

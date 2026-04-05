@@ -112,7 +112,7 @@ class RiskPolicy:
     - Manual overrides can be applied
     """
     
-    def __init__(self, tiers: List[RiskTier] = None, policy_version: str = "v1.0"):
+    def __init__(self, tiers: Optional[List[RiskTier]] = None, policy_version: str = "v1.0"):
         """
         Initialize the policy engine.
         
@@ -157,8 +157,7 @@ class RiskPolicy:
         if monthly_income <= 0:
             return None
         
-        # Use the more conservative of DTI or debt ratio
-        effective_ratio = min(dti_ratio, debt_ratio) if debt_ratio > 0 else dti_ratio
+        effective_ratio = max(dti_ratio, debt_ratio) if debt_ratio > 0 else dti_ratio
         available_income = monthly_income * (1 - effective_ratio)
         
         # Recommend max loan as 24 months of available income (2 years)
