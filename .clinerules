@@ -1,0 +1,7 @@
+# - when you see new project, quickly scan for requirements with packages. If you haven't found them, add them
+# - when you proceed with multiple commands, they are separated by semicolon and space
+# - could should be self-explainatory, without comments
+# - Add only essential changes
+# - Always run terminal command only once. Run again only if you testing
+# - Run tests before committing code
+# - Keep functions small and focused on a single task
