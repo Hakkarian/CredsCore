@@ -125,11 +125,7 @@ a {
   text-decoration: none;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  
+@layer components {
   .glass {
     background: rgba(84, 67, 67, 0.8);
     backdrop-filter: blur(12px);
@@ -220,5 +216,11 @@ a {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
