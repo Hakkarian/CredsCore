@@ -1,0 +1,43 @@
+@use "./_docs-common" as *;
+
+.docsCardGrid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &.cols2 {
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+.docsCardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.docsCardListItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+}
+
+.docsCardDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.dot-primary { background: #f3ca40; }
+  &.dot-cyan { background: #06b6d4; }
+  &.dot-lavender { background: #8b5cf6; }
+}

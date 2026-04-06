@@ -1,0 +1,5 @@
+@use "./_docs-common" as *;
+
+.docsCodeBlock {
+  @extend %docsCodeBlock;
+}
