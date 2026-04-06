@@ -2,88 +2,98 @@
 
 import { useEffect, useState } from "react";
 
-interface AnimatedBackgroundProps {
-  isLoaded: boolean;
-}
+const navItems = ["Features", "Docs", "Dashboard", "API"];
 
 export function Navigation({ isLoaded }: { isLoaded: boolean }) {
-  const navItems = ["Features", "Docs", "Dashboard", "API"];
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${isLoaded ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}>
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="glass-dark rounded-full px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg"><span className="text-white font-bold text-lg">CC</span></div>
+    <header className={`sticky top-0 z-50 transition-all duration-700 ${isLoaded ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"}`}>
+      <div className="mx-auto w-full px-8">
+        <div className="flex items-center justify-between py-6">
+          <a href="/" className="flex items-center gap-3">
+            <div className="h-10 w-10 gradient-primary rounded-2xl flex items-center justify-center shadow-md">
+              <span className="text-white font-bold">CC</span>
+            </div>
             <span className="font-display font-bold text-xl text-white">CredsCore</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
+          </a>
+          <nav className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
-              <a key={item} href={item === "Docs" ? "/docs" : item === "Dashboard" ? "/dashboard" : "#"} className="text-gray-300 hover:text-white transition-colors duration-300 font-medium relative group">
-                {item}<span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+              <a key={item} href={item === "Docs" ? "/docs" : item === "Dashboard" ? "/dashboard" : "#"} className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
+                {item}
               </a>
             ))}
+          </nav>
+          <div className="flex items-center gap-4">
+            <a href="/dashboard" className="text-sm text-gray-300 hover:text-white">Sign In</a>
+            <button className="btn-primary px-6 py-2.5 text-sm">Get Started</button>
           </div>
-          <button className="btn-primary">Get Started</button>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }
 
 export function HeroSection({ isLoaded }: { isLoaded: boolean }) {
   return (
-    <section className="pt-32 pb-20 px-6">
-      <div className="max-w-7xl mx-auto text-center">
-        <div className={`inline-flex items-center space-x-2 glass px-4 py-2 rounded-full mb-8 transition-all duration-700 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /><span className="text-sm font-medium text-gray-300">AI-Powered Credit Scoring</span>
+    <section className="px-8 py-16">
+      <div className="mx-auto max-w-6xl grid md:grid-cols-2 gap-12 items-center">
+        <div className={`space-y-6 transition-all duration-700 ${isLoaded ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"}`}>
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5">
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-sm text-gray-300">AI-Powered Credit Scoring</span>
+          </div>
+          <h1 className="font-display text-5xl md:text-6xl font-bold text-white leading-tight">
+            Credit Risk Analysis,{" "}
+            <span className="text-primary">Reimagined</span>
+          </h1>
+          <p className="text-lg text-gray-400 max-w-lg">
+            Make smarter lending decisions with LightGBM, SHAP explanations, and FAISS vector similarity search — all in real-time.
+          </p>
+          <div className="flex flex-wrap gap-4 pt-2">
+            <a href="/dashboard" className="btn-primary px-8 py-3.5">Start Predicting</a>
+            <a href="/docs" className="btn-secondary px-8 py-3.5">Read Docs</a>
+          </div>
         </div>
-        <h1 className={`font-display text-5xl md:text-7xl font-bold text-white mb-6 leading-tight transition-all duration-700 delay-100 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
-          Smart Credit<br /><span className="bg-gradient-to-r from-primary via-accent-cyan to-accent-lavender bg-clip-text text-transparent">Risk Assessment</span>
-        </h1>
-        <p className={`text-xl text-gray-400 max-w-2xl mx-auto mb-12 transition-all duration-700 delay-200 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
-          Leverage LightGBM, SHAP explanations, and FAISS vector search to make accurate, explainable credit decisions in real-time.
-        </p>
-        <div className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-300 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
-          <button className="btn-primary text-lg px-8 py-4">Try Live Demo</button>
-          <button className="btn-secondary text-lg px-8 py-4">View Documentation</button>
+        <div className={`transition-all duration-700 delay-200 ${isLoaded ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"}`}>
+          <div className="card p-12 space-y-8">
+            <h3 className="text-white font-semibold flex items-center gap-2 text-lg">
+              📊 Applicant Analysis
+            </h3>
+            {[{ label: "Income Score", pct: 85 }, { label: "Credit History", pct: 92 }, { label: "Debt Ratio", pct: 67 }].map((item, i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">{item.label}</span>
+                  <span className="text-white font-medium">{item.pct}%</span>
+                </div>
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent-cyan" style={{ width: `${item.pct}%` }} />
+                </div>
+              </div>
+            ))}
+            <div className="pt-2 flex items-center gap-3">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20 text-green-400 text-sm font-bold">✓</span>
+              <span className="text-sm text-gray-300">Low Risk — Approved</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-export function HeroVisual({ isLoaded }: { isLoaded: boolean }) {
-  const icons = ["📊", "🎯", "⚡"];
-  return (
-    <div className={`mt-20 relative transition-all duration-1000 delay-500 ${isLoaded ? "translate-y-0 opacity-100 scale-100" : "translate-y-20 opacity-0 scale-95"}`}>
-      <div className="card max-w-4xl mx-auto shadow-2xl">
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="h-4 bg-primary/30 rounded-full shimmer" /><div className="h-4 bg-accent-cyan/30 rounded-full shimmer" style={{ animationDelay: "0.2s" }} /><div className="h-4 bg-accent-lavender/30 rounded-full shimmer" style={{ animationDelay: "0.4s" }} />
-        </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center space-x-4">
-              <div className="w-12 h-12 gradient-accent rounded-xl flex items-center justify-center text-2xl shadow-lg animate-bounce-subtle" style={{ animationDelay: `${i * 0.3}s` }}>{icons[i - 1]}</div>
-              <div className="flex-1 space-y-2"><div className="h-3 bg-white/20 rounded-full w-3/4" /><div className="h-3 bg-white/10 rounded-full w-1/2" /></div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-primary/10 rounded-full blur-xl" />
-    </div>
-  );
-}
-
 export function StatsGrid() {
-  const stats = [{ value: "99.2%", label: "Accuracy", icon: "🎯" }, { value: "< 100ms", label: "Response Time", icon: "⚡" }, { value: "150K+", label: "Training Samples", icon: "📊" }, { value: "5", label: "Use Cases", icon: "🔧" }];
+  const stats = [
+    { value: "99.2%", label: "Model Accuracy" },
+    { value: "<100ms", label: "Inference Speed" },
+    { value: "150K+", label: "Training Records" },
+    { value: "5", label: "API Endpoints" },
+  ];
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <div key={i} className="card text-center group" style={{ animationDelay: `${i * 0.1}s` }}>
-            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{stat.icon}</div>
-            <div className="font-display text-3xl font-bold text-white mb-1">{stat.value}</div>
-            <div className="text-gray-400 text-sm">{stat.label}</div>
+    <section className="px-8 py-12">
+      <div className="mx-auto max-w-6xl grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((s, i) => (
+          <div key={i} className="card p-10 text-center md:text-left">
+            <div className="font-display text-3xl font-bold text-white">{s.value}</div>
+            <div className="text-sm text-gray-500 mt-1">{s.label}</div>
           </div>
         ))}
       </div>
@@ -92,21 +102,29 @@ export function StatsGrid() {
 }
 
 export function FeaturesSection({ activeFeature, onFeatureChange }: { activeFeature: number; onFeatureChange: (i: number) => void }) {
-  const features = [{ icon: "🎯", title: "Risk Prediction", description: "Advanced ML models predict credit default probability with high accuracy", color: "from-primary to-accent-pink" }, { icon: "🔍", title: "Similar Applicants", description: "FAISS vector search finds similar past applicants for better insights", color: "from-accent-pink to-accent-lavender" }, { icon: "📊", title: "Explainable AI", description: "SHAP explanations provide clear reasoning behind every decision", color: "from-accent-lavender to-accent-gold" }, { icon: "📈", title: "Drift Monitoring", description: "Real-time detection of data distribution changes", color: "from-accent-gold to-primary" }];
+  const features = [
+    { icon: "🎯", title: "Risk Prediction", desc: "LightGBM models deliver state-of-the-art default probability estimation." },
+    { icon: "🔍", title: "Similarity Search", desc: "FAISS embeddings find historically similar applicants for context." },
+    { icon: "📊", title: "Explainability", desc: "SHAP values break down every factor influencing a credit decision." },
+    { icon: "📈", title: "Drift Detection", desc: "Monitor data shifts over time and retrain models proactively." },
+  ];
   return (
-    <section className="py-20 px-6" id="features">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">Powerful Features</h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">Everything you need for intelligent credit risk assessment</p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, i) => (
-            <div key={i} className={`card cursor-pointer ${activeFeature === i ? "ring-2 ring-primary shadow-lg shadow-primary/20" : ""}`} onClick={() => onFeatureChange(i)} style={{ animationDelay: `${i * 0.15}s` }}>
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-3xl mb-6 shadow-lg`}>{feature.icon}</div>
-              <h3 className="font-display text-xl font-bold text-white mb-3">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-            </div>
+    <section id="features" className="px-8 py-16">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {features.map((f, i) => (
+            <button
+              key={i}
+              className={`text-left p-10 rounded-2xl border transition-all duration-300 focus:outline-none ${activeFeature === i
+                  ? "bg-primary/10 border-primary shadow-lg shadow-primary/10"
+                  : "bg-card/50 border-card-border hover:border-primary/50"
+                }`}
+              onClick={() => onFeatureChange(i)}
+            >
+              <div className="text-3xl mb-3">{f.icon}</div>
+              <h3 className="text-white font-semibold mb-2">{f.title}</h3>
+              <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+            </button>
           ))}
         </div>
       </div>
@@ -116,16 +134,24 @@ export function FeaturesSection({ activeFeature, onFeatureChange }: { activeFeat
 
 export function CTASection() {
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="gradient-primary rounded-3xl p-12 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-accent-gold/20 via-accent-pink/20 to-accent-lavender/20" />
-          <div className="relative z-10">
-            <h2 className="font-display text-4xl font-bold text-white mb-4">Ready to Transform Your Credit Decisions?</h2>
-            <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">Start making smarter, faster, and more explainable credit decisions today.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="bg-white text-primary px-8 py-4 rounded-full font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">Start Free Trial</button>
-              <button className="border-2 border-white/30 text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white/10 transform hover:-translate-y-1 transition-all duration-300">Schedule Demo</button>
+    <section className="px-8 py-16">
+      <div className="mx-auto max-w-4xl">
+        <div className="gradient-primary rounded-3xl p-16 md:p-24 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-accent-gold/10 via-accent-pink/10 to-accent-lavender/10" />
+          <div className="relative z-10 space-y-4">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white">
+              Transform Your Credit Process
+            </h2>
+            <p className="text-white/70 max-w-xl mx-auto">
+              Deploy intelligent scoring in minutes. No infrastructure, no training data — just predictions.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <a href="/dashboard" className="bg-white text-primary font-semibold px-8 py-3 rounded-full hover:shadow-xl transition-all">
+                Start Free Trial
+              </a>
+              <a href="/docs" className="border border-white/20 text-white px-8 py-3 rounded-full hover:bg-white/10 transition-all">
+                View API Docs
+              </a>
             </div>
           </div>
         </div>
@@ -136,13 +162,15 @@ export function CTASection() {
 
 export function Footer() {
   return (
-    <footer className="py-12 px-6 border-t border-card-border">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
-        <div className="flex items-center space-x-3 mb-4 md:mb-0">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center"><span className="text-white font-bold text-lg">CC</span></div>
-          <span className="font-display font-bold text-xl text-white">CredsCore</span>
+    <footer className="px-8 py-10 border-t border-card-border">
+      <div className="mx-auto max-w-6xl flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 gradient-primary rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-sm">CC</span>
+          </div>
+          <span className="font-display font-semibold text-white">CredsCore</span>
         </div>
-        <div className="text-gray-400 text-sm">© 2026 CredsCore. AI-Powered Credit Scoring.</div>
+        <span className="text-sm text-gray-500">&copy; 2026 CredsCore</span>
       </div>
     </footer>
   );

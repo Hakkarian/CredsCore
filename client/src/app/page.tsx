@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navigation, HeroSection, HeroVisual, StatsGrid, FeaturesSection, CTASection, Footer } from "@/components/landing/landing-components";
+import { Navigation, HeroSection, StatsGrid, FeaturesSection, CTASection, Footer } from "@/components/landing/landing-components";
 
 export default function LandingPage() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -21,7 +21,6 @@ export default function LandingPage() {
       </div>
       <Navigation isLoaded={isLoaded} />
       <HeroSection isLoaded={isLoaded} />
-      <HeroVisual isLoaded={isLoaded} />
       <StatsGrid />
       <FeaturesSection activeFeature={activeFeature} onFeatureChange={setActiveFeature} />
       <CTASection />

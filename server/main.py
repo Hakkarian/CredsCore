@@ -1,14 +1,26 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import joblib
 import os
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Optional
-from app.models import ClientData, CreditApplicationRequest, RiskAssessmentResponse, PolicyAssessment
+from app.models import (
+    ClientData,
+    CreditApplicationRequest,
+    RiskAssessmentResponse,
+    PolicyAssessment,
+    ApplicantScoreResponse,
+    FraudRingStatsResponse,
+    FraudRingResponse,
+    ScanStatusResponse,
+)
 from app.policy import assess_risk
 from app.transforms import safe_log
 from app.faiss_index import FAISSCreditIndex
+from app.faiss_scorer import FAISSRealTimeScorer
+from app.snn_fraud_detector import SNNFraudDetector
+from app.batch_processor import BatchFraudProcessor
 from pydantic import BaseModel, Field
 
 app = FastAPI(
@@ -19,6 +31,7 @@ app = FastAPI(
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 model, explainer, feature_names, faiss_index_val, rgcn_factory, rgcn_features = None, None, None, None, None, {}
+batch_processor: Optional[BatchFraudProcessor] = None
 
 FEATURE_MAP = {
     'RevolvingUtilizationOfUnsecuredLines': 'RevolvingUtilizationOfUnsecuredLines', 'age': 'age',
@@ -62,14 +75,17 @@ def load_models():
 
 @app.on_event("startup")
 async def startup():
+    global batch_processor, faiss_index_val
     load_models()
+    batch_processor = BatchFraudProcessor()
+    batch_processor.initialize()
 
 @app.get("/")
 def root():
     return {
         "message": "Credit Risk Prediction API",
-        "version": "4.0.0",
-        "design": "ML Risk Estimation + Policy Decision Engine + RGCN Feature Factory",
+        "version": "5.0.0",
+        "design": "ML Risk Estimation + Policy Decision Engine + RGCN Feature Factory + FAISS/SNN Fraud Detection",
         "endpoints": {
             "/health": "Health check",
             "/predict": "Predict (POST)",
@@ -83,17 +99,24 @@ def root():
             "/peer-groups": "Peer groups (POST)",
             "/rgcn-features": "Get RGCN-extracted features (POST)",
             "/rgcn-info": "RGCN model information",
+            "/score-applicant": "FAISS real-time scoring (POST)",
+            "/fraud-rings": "Query detected fraud rings (GET)",
+            "/fraud-rings/{ring_id}": "Get specific fraud ring (GET)",
+            "/fraud-rings/scan": "Trigger fraud ring scan (POST)",
+            "/fraud-rings/status": "Scan status (GET)",
         },
     }
 
 @app.get("/health")
 def health():
     rgcn_loaded = rgcn_factory is not None and getattr(rgcn_factory, 'is_loaded', False)
+    snn_loaded = batch_processor is not None and batch_processor.snn_detector is not None
     return {
         "status": "healthy",
         "model_loaded": model is not None,
         "faiss_loaded": faiss_index_val is not None,
         "rgcn_loaded": rgcn_loaded,
+        "snn_loaded": snn_loaded,
     }
 
 @app.get("/model-info")
@@ -418,6 +441,134 @@ def policy_info():
         "tiers": tiers,
         "design_principle": "Models estimate risk; policies make decisions"
     }
+
+
+# ============================================================
+# FAISS Real-Time Scoring & SNN Fraud Ring Detection Endpoints
+# ============================================================
+
+@app.post("/score-applicant", response_model=ApplicantScoreResponse)
+def score_applicant(cd: ClientData, k: int = 20):
+    """
+    Real-time individual applicant scoring using FAISS similarity analysis.
+    
+    Evaluates an applicant against historical data to compute enhanced risk scores
+    based on neighbor similarity, anomaly detection, and fraud signal identification.
+    """
+    if not batch_processor or not batch_processor.faiss_scorer:
+        raise HTTPException(status_code=503, detail="FAISS scorer not available")
+
+    try:
+        df = to_dataframe(cd)
+        score_result = batch_processor.score_applicant(df)
+        
+        fraud_rings = batch_processor.get_applicant_fraud_rings(0)
+        
+        return ApplicantScoreResponse(
+            enhanced_risk_score=score_result["enhanced_risk_score"],
+            base_neighbor_risk=score_result["base_neighbor_risk"],
+            weighted_neighbor_risk=score_result["weighted_neighbor_risk"],
+            default_neighbor_ratio=score_result["default_neighbor_ratio"],
+            anomaly_score=score_result["anomaly_score"],
+            fraud_indicator=score_result["fraud_indicator"],
+            risk_level=score_result["risk_level"],
+            neighbor_stats=score_result["neighbor_stats"],
+            fraud_rings=fraud_rings,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/fraud-rings", response_model=FraudRingStatsResponse)
+def get_fraud_rings():
+    """
+    Get all detected fraud rings from the last batch scan.
+    
+    Returns statistics and details of all fraud rings detected by the SNN algorithm.
+    """
+    if not batch_processor:
+        raise HTTPException(status_code=503, detail="Batch processor not available")
+
+    stats = batch_processor.get_fraud_rings_cache()
+    
+    rings_data = []
+    for ring in stats.get("rings", []):
+        rings_data.append(
+            FraudRingResponse(
+                ring_id=ring["ring_id"],
+                member_count=ring["member_count"],
+                avg_risk_score=ring["avg_risk_score"],
+                avg_anomaly_score=ring["avg_anomaly_score"],
+                cohesiveness=ring["cohesiveness"],
+                risk_level=ring["risk_level"],
+                risk_factors=ring["risk_factors"],
+                members=[
+                    {
+                        "index": m["index"],
+                        "risk_score": m["risk_score"],
+                        "anomaly_score": m["anomaly_score"],
+                        "shared_neighbors": m["shared_neighbors"],
+                    }
+                    for m in ring.get("top_members", [])
+                ],
+            )
+        )
+
+    return FraudRingStatsResponse(
+        total_applicants=stats.get("total_applicants", 0),
+        total_rings_detected=stats.get("total_rings_detected", 0),
+        high_risk_rings=stats.get("high_risk_rings", 0),
+        medium_risk_rings=stats.get("medium_risk_rings", 0),
+        low_risk_rings=stats.get("low_risk_rings", 0),
+        largest_ring_size=stats.get("largest_ring_size", 0),
+        avg_ring_size=stats.get("avg_ring_size", 0),
+        scan_timestamp=stats.get("scan_timestamp"),
+        scan_duration_seconds=stats.get("scan_duration_seconds"),
+        status=stats.get("status", "ok"),
+        rings=rings_data,
+    )
+
+
+@app.get("/fraud-rings/{ring_id}")
+def get_fraud_ring_by_id(ring_id: str):
+    """Get details of a specific fraud ring by ID."""
+    if not batch_processor:
+        raise HTTPException(status_code=503, detail="Batch processor not available")
+
+    ring = batch_processor.get_fraud_ring_by_id(ring_id)
+    if not ring:
+        raise HTTPException(status_code=404, detail=f"Fraud ring {ring_id} not found")
+    return ring
+
+
+@app.post("/fraud-rings/scan")
+async def trigger_fraud_scan(background_tasks: BackgroundTasks):
+    """
+    Trigger a manual SNN fraud ring scan.
+    
+    This runs in the background and updates the fraud ring cache when complete.
+    """
+    if not batch_processor:
+        raise HTTPException(status_code=503, detail="Batch processor not available")
+
+    result = await batch_processor.run_scan()
+    return result
+
+
+@app.get("/fraud-rings/status", response_model=ScanStatusResponse)
+def get_scan_status():
+    """Get the current scan status and statistics."""
+    if not batch_processor:
+        raise HTTPException(status_code=503, detail="Batch processor not available")
+
+    status = batch_processor.get_scan_status()
+    return ScanStatusResponse(
+        last_scan_time=status["last_scan_time"],
+        is_scanning=status["is_scanning"],
+        scan_interval_minutes=status["scan_interval_minutes"],
+        fraud_rings_detected=status["fraud_rings_detected"],
+        faiss_index_size=status["faiss_index_size"],
+    )
 
 
 if __name__ == "__main__":

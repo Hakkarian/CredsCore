@@ -42,7 +42,7 @@ export function ProbabilityChart({ probability, prediction, className }: Probabi
       
       <div className={styles.probabilityContent}>
         <div className={styles.probabilityChartContainer}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={112}>
             <PieChart>
               <Pie
                 data={data}

@@ -114,3 +114,59 @@ class RiskAssessmentResponse(BaseModel):
     # Human-readable summary
     human_summary: str = Field(..., description="Plain language explanation for sales/risk teams")
     tier_message: str = Field(..., description="Quick summary for customer communication")
+
+
+# ============================================================
+# FAISS + SNN Fraud Detection models
+# ============================================================
+
+class FraudRingMemberInfo(BaseModel):
+    index: int
+    risk_score: float
+    anomaly_score: float
+    shared_neighbors: int
+
+
+class FraudRingResponse(BaseModel):
+    ring_id: str
+    member_count: int
+    avg_risk_score: float
+    avg_anomaly_score: float
+    cohesiveness: float
+    risk_level: str
+    risk_factors: List[str]
+    members: List[FraudRingMemberInfo]
+
+
+class FraudRingStatsResponse(BaseModel):
+    total_applicants: int
+    total_rings_detected: int
+    high_risk_rings: int
+    medium_risk_rings: int
+    low_risk_rings: int
+    largest_ring_size: int
+    avg_ring_size: float
+    scan_timestamp: Optional[str] = None
+    scan_duration_seconds: Optional[float] = None
+    status: str = "ok"
+    rings: List[FraudRingResponse] = []
+
+
+class ApplicantScoreResponse(BaseModel):
+    enhanced_risk_score: float
+    base_neighbor_risk: float
+    weighted_neighbor_risk: float
+    default_neighbor_ratio: float
+    anomaly_score: float
+    fraud_indicator: dict
+    risk_level: str
+    neighbor_stats: dict
+    fraud_rings: List[dict] = []
+
+
+class ScanStatusResponse(BaseModel):
+    last_scan_time: Optional[str]
+    is_scanning: bool
+    scan_interval_minutes: int
+    fraud_rings_detected: int
+    faiss_index_size: int
