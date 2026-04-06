@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { DocsHeader, DocsSidebar, OverviewContent, QuickStartContent, ApiReferenceContent, EndpointsContent, ExamplesContent, ModelsContent } from "@/components/docs/docs-content";
+import { SiteHeader } from "@/components/layout/site-header";
+import { DocsSidebar, OverviewContent, QuickStartContent, ApiReferenceContent, EndpointsContent, ExamplesContent, ModelsContent } from "@/components/docs/docs-content";
 
 const SECTIONS = [
   { id: "overview", title: "Overview", icon: "📖" },
@@ -27,7 +28,7 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-screen bg-dark-green">
-      <DocsHeader />
+      <SiteHeader activePage="docs" />
       <div className="pt-24 flex">
         <DocsSidebar sections={SECTIONS} activeSection={activeSection} onSectionChange={setActiveSection} />
         <main className="ml-64 flex-1 p-12">

@@ -1,18 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Navigation } from "@/components/landing/landing-components";
+import { SiteHeader } from "@/components/layout/site-header";
 
 export default function LandingPage() {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsLoaded(true);
-  }, []);
-
   return (
     <div className="min-h-screen bg-dark-green">
-      <Navigation isLoaded={isLoaded} />
+      <SiteHeader activePage="home" />
     </div>
   );
 }

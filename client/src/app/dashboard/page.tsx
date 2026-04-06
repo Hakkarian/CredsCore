@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { DashboardHeader, PageHeader, TabBar, DASHBOARD_TABS } from "@/components/dashboard/dashboard-header";
+import { SiteHeader } from "@/components/layout/site-header";
+import { PageHeader, TabBar, DASHBOARD_TABS } from "@/components/dashboard/dashboard-header";
 import { InputForm } from "@/components/dashboard/input-form";
 import { PredictionResults, StatsGrid, RecentActivityTable } from "@/components/dashboard/results";
 import { PredictionResult, ApplicantData } from "@/lib/api";
@@ -28,7 +29,7 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.dashboard}>
-      <DashboardHeader title="CredsCore" subtitle="Dashboard" />
+      <SiteHeader activePage="dashboard" />
       <main className={styles.main}>
         <div className={styles.container}>
           <PageHeader title="Credit Risk Dashboard" subtitle="Real-time credit risk assessment and monitoring" />
