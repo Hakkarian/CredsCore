@@ -1,0 +1,43 @@
+@use "./_docs-common" as *;
+
+.docsQuickStep {
+  @extend %docsCard;
+}
+
+.stepContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.stepNumber {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, #f3ca40, #eab308);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.125rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.stepTitle {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.stepDesc {
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.stepCode {
+  @extend %docsCodeBlock;
+}

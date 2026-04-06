@@ -1,0 +1,161 @@
+@mixin transition-base {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+%docsCard {
+  background: rgba(84, 67, 67, 0.6);
+  border: 1px solid rgba(215, 192, 208, 0.5);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  @include transition-base;
+  @include hover-lift;
+}
+
+%docsCodeBlock {
+  background: rgba(0, 37, 0, 0.6);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #ffffff;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.docsCard {
+  @extend %docsCard;
+}
+
+.docsCardIcon {
+  font-size: 1.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.docsCardTitle {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.docsCardDesc {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.docsCardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.docsCardListItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 0.5rem;
+}
+
+.docsCardDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.primary { background: #f3ca40; }
+  &.cyan { background: #06b6d4; }
+  &.lavender { background: #8b5cf6; }
+}
+
+.docsCodeBlock {
+  @extend %docsCodeBlock;
+}
+
+.docsHeading {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.docsText {
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.docsNote {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: 0.75rem;
+  padding: 1rem;
+
+  p {
+    color: #ffffff;
+    font-weight: 500;
+  }
+}
+
+.docsListTitle {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.docsSection {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.docsTitle {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+.docsSubtitle {
+  font-size: 1.125rem;
+  color: #9ca3af;
+  margin-bottom: 2rem;
+  max-width: 48rem;
+}
+
+.docsCardGrid {
+  display: grid;
+  gap: 1.5rem;
+
+  &.cols-3 {
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  &.cols-2 {
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
