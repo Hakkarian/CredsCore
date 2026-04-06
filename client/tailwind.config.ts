@@ -30,6 +30,7 @@ const config: Config = {
           gold: "#F3CA40",
           pink: "#E5A4CB",
           lavender: "#D7C0D0",
+          cyan: "#22d3ee",
         },
         background: "var(--background)",
         foreground: "var(--foreground)",

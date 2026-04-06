@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import cn from "classnames";
 import { api, ApplicantData } from "@/lib/api";
 import styles from "./dashboard.module.scss";
@@ -13,10 +14,18 @@ interface InputFormProps {
 }
 
 export function InputForm({ formData, onFormDataChange, onResult, isLoading, onLoadingChange }: InputFormProps) {
+  const [editValues, setEditValues] = useState<Record<string, string>>(
+    () => Object.fromEntries(Object.entries(formData).map(([k, v]) => [k, String(v)]))
+  );
+
   const handleSubmit = async () => {
     onLoadingChange(true);
+    const parsedData = Object.fromEntries(
+      Object.entries(formData).map(([key]) => [key, parseFloat(editValues[key] ?? "0") || 0])
+    ) as unknown as ApplicantData;
+    onFormDataChange(parsedData);
     try {
-      const response = await api.predict(formData);
+      const response = await api.predict(parsedData);
       onResult(response);
     } catch {
       onResult({
@@ -34,32 +43,28 @@ export function InputForm({ formData, onFormDataChange, onResult, isLoading, onL
     onLoadingChange(false);
   };
 
-  const handleFieldChange = (key: keyof ApplicantData, value: string) => {
-    onFormDataChange({ ...formData, [key]: parseFloat(value) || 0 });
-  };
-
-  const formatLabel = (key: string) => {
-    return key.replace(/([A-Z])/g, " $1")
+  const formatLabel = (key: string) =>
+    key
+      .replace(/([A-Z])/g, " $1")
       .replace(/(\d+)([A-Z])/g, "$1 $2")
       .replace(/(\d),(\d)/g, "$1-$2")
       .trim();
-  };
 
   return (
     <div className={styles.inputForm}>
       <h2 className={styles.inputFormTitle}>Applicant Data</h2>
       <div className={styles.inputScrollArea}>
-        {Object.entries(formData).map(([key, value]) => (
+        {Object.keys(formData).map((key) => (
           <div key={key} className={styles.inputGroup}>
-            <label className={styles.inputLabel}>
-              {formatLabel(key)}
-            </label>
+            <label className={styles.inputLabel}>{formatLabel(key)}</label>
             <input
               type="number"
-              value={value}
-              onChange={(e) => handleFieldChange(key as keyof ApplicantData, e.target.value)}
+              value={editValues[key] ?? ""}
+              onChange={(e) => setEditValues((prev) => ({ ...prev, [key]: e.target.value }))}
+              onFocus={(e) => e.target.select()}
               className={styles.inputField}
               step="any"
+              placeholder="0"
             />
           </div>
         ))}
@@ -67,10 +72,7 @@ export function InputForm({ formData, onFormDataChange, onResult, isLoading, onL
       <button
         onClick={handleSubmit}
         disabled={isLoading}
-        className={cn(
-          styles.submitButton,
-          isLoading && styles.submitButtonLoading
-        )}
+        className={cn(styles.submitButton, isLoading && styles.submitButtonLoading)}
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">

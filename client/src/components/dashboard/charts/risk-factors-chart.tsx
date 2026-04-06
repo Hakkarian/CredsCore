@@ -28,7 +28,7 @@ export function RiskFactorsChart({ factors, className }: RiskFactorsChartProps) 
             </div>
 
             <div className={styles.riskFactorsChartContainer}>
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={224}>
                     <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
                         <XAxis
                             type="number"

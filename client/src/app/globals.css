@@ -21,6 +21,7 @@
   --color-accent-gold: #F3CA40;
   --color-accent-pink: #E5A4CB;
   --color-accent-lavender: #D7C0D0;
+  --color-accent-cyan: #22d3ee;
   
   --font-sans: "Inter", system-ui, sans-serif;
   --font-display: "Poppins", system-ui, sans-serif;
@@ -212,5 +213,12 @@ a {
     background: rgba(84, 67, 67, 0.8);
     transform: translateY(-4px);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+  
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #F3CA40 0%, #E5A4CB 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
