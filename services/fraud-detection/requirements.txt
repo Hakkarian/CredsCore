@@ -1,0 +1,12 @@
+fastapi>=0.128.5
+uvicorn>=0.40.0
+pydantic>=2.5.0
+pydantic-settings>=2.0.0
+pandas>=2.2.3
+numpy>=1.26.2
+faiss-cpu>=1.7.4
+scikit-learn>=1.3.0
+torch>=2.0.0
+httpx>=0.25.0
+redis>=5.0.0
+kafka-python>=2.0.2

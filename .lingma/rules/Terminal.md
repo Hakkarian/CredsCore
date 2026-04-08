@@ -1,0 +1,1 @@
+Check the terminal for errors after each execution.
