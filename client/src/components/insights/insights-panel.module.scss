@@ -1,0 +1,426 @@
+@use "@/styles/variables" as *;
+
+// --- Loading state ---
+.loadingState {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.loadingInner {
+  @include flex-center;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 3rem 0;
+}
+
+.loadingSpinner {
+  height: 2rem;
+  width: 2rem;
+  animation: spin 1s linear infinite;
+  color: $color-primary;
+}
+
+.spinnerCircle {
+  opacity: 0.25;
+}
+
+.spinnerPath {
+  opacity: 0.75;
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// --- Error state ---
+.errorState {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.errorInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 0;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  color: $color-red-400;
+}
+
+.retryButton {
+  border-radius: $radius-lg;
+  border: 1px solid rgba($color-primary, 0.3);
+  background: rgba($color-primary, 0.1);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: rgba($color-primary, 0.2);
+  }
+}
+
+// --- Empty state ---
+.emptyState {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.emptyInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 0;
+}
+
+.emptyIcon {
+  font-size: 1.5rem;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// --- Main content ---
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.headerIcon {
+  margin-right: 0.5rem;
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Risk badge variants
+.riskBadge {
+  border-radius: $radius-full;
+  border: 1px solid;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.riskBadgeHigh {
+  @include risk-badge($color-red-500-20, $color-red-400);
+  border-color: rgba($color-red-500, 0.3);
+}
+
+.riskBadgeMedium {
+  @include risk-badge($color-yellow-500-20, $color-yellow-400);
+  border-color: rgba($color-yellow-500, 0.3);
+}
+
+.riskBadgeLow {
+  @include risk-badge($color-green-500-20, $color-green-400);
+  border-color: rgba($color-green-500, 0.3);
+}
+
+// --- ML + Combined Score ---
+.mlSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mlLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.mlScore {
+  margin-top: 0.25rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.mlMetrics {
+  display: flex;
+  gap: 1rem;
+}
+
+.metricItem {
+  text-align: center;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.metricValue {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-neutral-200;
+}
+
+.metricValueFraud {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-red-400;
+}
+
+// --- Causal Analysis ---
+.causalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.causalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.causalItem {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.75rem;
+}
+
+.causalItemLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.causalItemValue {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-neutral-200;
+}
+
+.causalItemValuePrimary {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+}
+
+.improvementPositive {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-green-400;
+}
+
+.improvementNegative {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-red-400;
+}
+
+.confidenceValue {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+}
+
+// --- Social Capital ---
+.socialSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: $bp-sm) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.socialItem {
+  text-align: center;
+}
+
+.socialLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.socialValuePrimary {
+  margin-top: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.socialValueDefault {
+  margin-top: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $color-neutral-200;
+}
+
+// --- Counterfactuals ---
+.counterfactualsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.counterfactualsScroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.counterfactualsTable {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.tableHead {
+  border-bottom: 1px solid $color-white-10;
+}
+
+.thLeft {
+  padding-bottom: 0.75rem;
+  padding-right: 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.thRight {
+  padding-bottom: 0.75rem;
+  padding-right: 1rem;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.thRightLast {
+  padding-bottom: 0.75rem;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.tableRow {
+  border-bottom: 1px solid $color-white-5;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: $color-white-5;
+  }
+}
+
+.tdDecision {
+  padding: 0.75rem 1rem 0.75rem 0;
+  color: $color-neutral-200;
+}
+
+.tdProbability {
+  padding: 0.75rem 1rem 0.75rem 0;
+  text-align: right;
+  font-family: $font-mono;
+  color: $color-neutral-300;
+}
+
+.tdChange {
+  padding: 0.75rem 0;
+  text-align: right;
+  font-family: $font-mono;
+}
+
+.changePositive {
+  color: $color-red-400;
+}
+
+.changeNegative {
+  color: $color-green-400;
+}
+
+// --- Recommendation ---
+.recommendationSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.recommendationTitle {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.recommendationText {
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: $color-neutral-300;
+}
+
+.recommendationSummary {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+  border-top: 1px solid $color-white-10;
+  padding-top: 0.5rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
