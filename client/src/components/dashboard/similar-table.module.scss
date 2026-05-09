@@ -1,0 +1,245 @@
+@use "@/styles/variables" as *;
+
+.tableWrapper {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  /* Hide scrollbar but keep scrollable */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.emptyState {
+  @include card-static;
+  padding: 2rem;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.tableTitle {
+  font-family: $font-display;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-white;
+  margin-bottom: 1rem;
+}
+
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.tableHead {
+  border-bottom: 1px solid $color-white-10;
+}
+
+.tableHeaderCell {
+  white-space: nowrap;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color $duration-fast ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: $color-white-5;
+  }
+}
+
+.tableCell {
+  white-space: nowrap;
+  padding: 0.625rem 0.5rem;
+}
+
+.tableCellMono {
+  white-space: nowrap;
+  padding: 0.625rem 0.5rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.similarityCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.similarityLabel {
+  font-size: 0.75rem;
+  color: $color-white;
+}
+
+// SimilarityBar
+.barTrack {
+  height: 0.375rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-color: $color-white-10;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: all $duration-normal ease;
+}
+
+.barHigh {
+  background-color: $color-green-400;
+}
+
+.barMedium {
+  background-color: $color-yellow-400;
+}
+
+.barLow {
+  background-color: $color-red-400;
+}
+
+// MatchBadge
+.matchBadge {
+  border-radius: $radius-sm;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.matchHigh {
+  @include risk-badge($color-green-500-20, $color-green-400);
+}
+
+.matchMedium {
+  @include risk-badge($color-yellow-500-20, $color-yellow-400);
+}
+
+.matchLow {
+  @include risk-badge($color-red-500-20, $color-red-400);
+}
+
+// RankBadge
+.rankBadge {
+  display: inline-flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-sm;
+  border: 1px solid;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.rank1 {
+  background-color: rgba($color-primary, 0.2);
+  color: $color-primary;
+  border-color: rgba($color-primary, 0.3);
+}
+
+.rank2 {
+  background-color: rgba(#d4d4d4, 0.1);
+  color: #d4d4d4;
+  border-color: rgba(#d4d4d4, 0.2);
+}
+
+.rank3 {
+  background-color: rgba(#d97706, 0.2);
+  color: #fbbf24;
+  border-color: rgba(#d97706, 0.3);
+}
+
+.rankDefault {
+  border-color: $color-white-10;
+  background-color: $color-white-5;
+  color: $color-neutral-400;
+}
+
+// SourceBadge
+.sourceBadgeGroup {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.sourceBadge {
+  border-radius: $radius-sm;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.sourceFraud {
+  background-color: rgba(#a855f7, 0.2);
+  color: #c084fc;
+}
+
+.sourceCredit {
+  background-color: $color-blue-500-20;
+  color: $color-blue-400;
+}
+
+.sourceDefault {
+  background-color: $color-white-10;
+  color: $color-neutral-400;
+}
+
+// Risk badge in table
+.riskBadge {
+  border-radius: $radius-sm;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.riskHigh {
+  @include risk-badge($color-red-500-20, $color-red-400);
+}
+
+.riskMedium {
+  @include risk-badge($color-yellow-500-20, $color-yellow-400);
+}
+
+.riskLow {
+  @include risk-badge($color-green-500-20, $color-green-400);
+}
+
+// Default badge
+.defaultBadge {
+  border-radius: $radius-sm;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.defaultBad {
+  @include risk-badge($color-red-500-20, $color-red-400);
+}
+
+.defaultGood {
+  @include risk-badge($color-green-500-20, $color-green-400);
+}
+
+// Sparkline container
+.sparklineCell {
+  width: 4rem;
+}
