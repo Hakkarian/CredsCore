@@ -1,0 +1,323 @@
+@use "@/styles/variables" as *;
+
+.container {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.loadingContainer {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.loadingInner {
+  @include flex-center;
+  padding: 3rem 0;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+  color: $color-primary;
+}
+
+.spinnerCircle {
+  opacity: 0.25;
+}
+
+.spinnerPath {
+  opacity: 0.75;
+}
+
+.errorContainer {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.errorInner {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.errorText {
+  font-size: 0.875rem;
+  color: $color-red-400;
+}
+
+.retryButton {
+  margin-top: 0.75rem;
+  border-radius: $radius-lg;
+  border: 1px solid rgba($color-primary, 0.3);
+  background: rgba($color-primary, 0.1);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+  transition: background $duration-fast;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($color-primary, 0.2);
+  }
+}
+
+.emptyContainer {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.emptyInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 0;
+}
+
+.emptyIcon {
+  font-size: 1.5rem;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header {
+  // no additional styles needed beyond children
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e5e5e5;
+
+  .titleIcon {
+    margin-right: 0.5rem;
+  }
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Key Metrics
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1.25rem;
+
+  @media (min-width: $bp-sm) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.metricCenter {
+  text-align: center;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.metricValue {
+  margin-top: 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e5e5e5;
+}
+
+.metricValuePositive {
+  @extend .metricValue;
+  color: $color-red-400;
+}
+
+.metricValueNegative {
+  @extend .metricValue;
+  color: $color-green-400;
+}
+
+.metricValueSmall {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #e5e5e5;
+}
+
+// Treatment Method & Significance
+.methodGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.methodLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.methodValue {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e5e5e5;
+  text-transform: capitalize;
+}
+
+.methodValueSignificant {
+  @extend .methodValue;
+  color: $color-primary;
+}
+
+.methodValueNotSignificant {
+  @extend .methodValue;
+  color: $color-neutral-400;
+}
+
+// Interpretation
+.interpretationContent {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.interpretationTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.interpretationList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.interpretationRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.interpretationLabel {
+  color: $color-neutral-400;
+}
+
+.interpretationValue {
+  color: #e5e5e5;
+}
+
+.interpretationValuePrimary {
+  color: $color-primary;
+}
+
+// Propensity Chart Section
+.propensitySection {
+  padding: 1.25rem;
+}
+
+.propensityTitle {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+// Covariate Balance
+.covariateSection {
+  padding: 1.25rem;
+}
+
+.covariateTitle {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.covariateList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.covariateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-5;
+  background: $color-white-5;
+  padding: 0.625rem 1rem;
+}
+
+.covariateName {
+  font-size: 0.875rem;
+  color: #d4d4d4;
+}
+
+.covariateDetails {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+}
+
+.covariateBefore,
+.covariateAfter {
+  color: $color-neutral-400;
+}
+
+.covariateImproved {
+  font-weight: 500;
+  color: $color-green-400;
+}
+
+.covariateUnchanged {
+  font-weight: 500;
+  color: $color-yellow-400;
+}
+
+// Counterfactual Section
+.counterfactualSection {
+  padding: 1.25rem;
+}
+
+.counterfactualTitle {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
