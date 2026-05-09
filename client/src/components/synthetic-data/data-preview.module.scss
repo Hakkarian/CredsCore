@@ -1,0 +1,127 @@
+@use "@/styles/variables" as *;
+
+.container {
+  padding: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.totalCount {
+  font-size: 0.75rem;
+  color: $color-neutral-500;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.table {
+  width: 100%;
+  font-size: 0.75rem;
+}
+
+.tableHead {
+  border-bottom: 1px solid $color-white-10;
+}
+
+.th {
+  padding-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $color-neutral-400;
+}
+
+.thIndex {
+  @extend .th;
+  text-align: left;
+  padding-right: 0.75rem;
+}
+
+.thCell {
+  @extend .th;
+  text-align: right;
+  padding: 0 0.5rem;
+  white-space: nowrap;
+}
+
+.tableRow {
+  border-bottom: 1px solid $color-white-5;
+  transition: background $duration-fast;
+
+  &:hover {
+    background: $color-white-5;
+  }
+}
+
+.tdIndex {
+  padding: 0.5rem 0;
+  padding-right: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.tdCell {
+  padding: 0.5rem 0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  text-align: right;
+  font-family: $font-sans;
+  color: #d4d4d4;
+}
+
+.pagination {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid $color-white-10;
+  padding-top: 0.75rem;
+}
+
+.pageButton {
+  border-radius: $radius-lg;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background $duration-fast;
+  color: #d4d4d4;
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  &:hover {
+    background: $color-white-5;
+  }
+}
+
+.pageButtonDisabled {
+  @extend .pageButton;
+  cursor: not-allowed;
+  color: $color-neutral-600;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
+.pageInfo {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
