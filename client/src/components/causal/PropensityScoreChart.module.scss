@@ -1,0 +1,43 @@
+@use "@/styles/variables" as *;
+
+.chartContainer {
+  padding: 1rem;
+}
+
+.tooltip {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: #1a1a1a;
+  padding: 0.5rem 0.75rem;
+  box-shadow: $shadow-medium;
+}
+
+.tooltipBin {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #d4d4d4;
+  margin-bottom: 0.25rem;
+}
+
+.tooltipValues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  font-size: 0.75rem;
+}
+
+.tooltipTreated {
+  color: $color-primary;
+}
+
+.tooltipControl {
+  color: #22d3ee;
+}
+
+.tooltipBalance {
+  color: $color-neutral-400;
+}
+
+.legendText {
+  color: $color-neutral-400;
+}

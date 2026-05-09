@@ -1,0 +1,105 @@
+@use "@/styles/variables" as *;
+
+.emptyMessage {
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  padding: 1rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.tableHead {
+  border-bottom: 1px solid $color-white-10;
+}
+
+.th {
+  padding-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.thLeft {
+  @extend .th;
+  text-align: left;
+  padding-right: 1rem;
+}
+
+.thRight {
+  @extend .th;
+  text-align: right;
+  padding-right: 1rem;
+}
+
+.thCenter {
+  @extend .th;
+  text-align: center;
+}
+
+.tableRow {
+  border-bottom: 1px solid $color-white-5;
+  transition: background $duration-fast;
+
+  &:hover {
+    background: $color-white-5;
+  }
+}
+
+.td {
+  padding: 0.75rem 0;
+  color: #e5e5e5;
+}
+
+.tdScenario {
+  @extend .td;
+  padding-right: 1rem;
+}
+
+.tdRight {
+  @extend .td;
+  text-align: right;
+  padding-right: 1rem;
+  font-family: $font-sans;
+  color: #d4d4d4;
+}
+
+.tdCenter {
+  @extend .td;
+  text-align: center;
+}
+
+.impactBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.impactIncrease {
+  color: $color-red-400;
+}
+
+.impactDecrease {
+  color: $color-green-400;
+}
+
+.impactNeutral {
+  color: $color-neutral-400;
+}
