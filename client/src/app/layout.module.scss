@@ -1,0 +1,13 @@
+@use "@/styles/variables" as *;
+
+.html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
