@@ -1,0 +1,719 @@
+@use "@/styles/variables" as *;
+
+// --- Loading state ---
+.loadingState {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.loadingInner {
+  @include flex-center;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 3rem 0;
+}
+
+.loadingSpinner {
+  height: 2rem;
+  width: 2rem;
+  animation: spin 1s linear infinite;
+  color: $color-primary;
+}
+
+.spinnerCircle {
+  opacity: 0.25;
+}
+
+.spinnerPath {
+  opacity: 0.75;
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// --- Empty state ---
+.emptyState {
+  @include card-static;
+  padding: 1.5rem;
+}
+
+.emptyInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 0;
+}
+
+.emptyIcon {
+  font-size: 1.5rem;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// --- Main panel ---
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.headerIcon {
+  margin-right: 0.5rem;
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Risk badge container (combined score badge)
+.riskBadgeContainer {
+  border-radius: $radius-lg;
+  border: 1px solid;
+  padding: 0.375rem 0.75rem;
+}
+
+.riskBadgeText {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+// Risk color text variants
+.riskColorNeutral {
+  color: $color-neutral-400;
+}
+
+.riskColorRed {
+  color: $color-red-400;
+}
+
+.riskColorYellow {
+  color: $color-yellow-400;
+}
+
+.riskColorGreen {
+  color: $color-green-400;
+}
+
+// Risk background variants
+.riskBgNeutral {
+  background: $color-white-5;
+  border-color: $color-white-10;
+}
+
+.riskBgRed {
+  background: $color-red-500-20;
+  border-color: rgba($color-red-500, 0.2);
+}
+
+.riskBgYellow {
+  background: $color-yellow-500-20;
+  border-color: rgba($color-yellow-500, 0.2);
+}
+
+.riskBgGreen {
+  background: $color-green-500-20;
+  border-color: rgba($color-green-500, 0.2);
+}
+
+// --- Consensus / Recommendation ---
+.consensusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.sectionLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.sectionValue {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-neutral-200;
+}
+
+.sectionValuePrimary {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+}
+
+.consensusDivider {
+  margin-top: 0.75rem;
+  border-top: 1px solid $color-white-10;
+  padding-top: 0.75rem;
+}
+
+.consensusLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.consensusDecision {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: $color-neutral-200;
+}
+
+.consensusRationale {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+// --- Agent Detail ---
+.agentDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.agentDetailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.agentDetailTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.agentDetailId {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.agentScoreBadge {
+  border-radius: $radius-lg;
+  border: 1px solid;
+  padding: 0.25rem 0.75rem;
+}
+
+.agentScoreText {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+// Agent sub-sections
+.agentSubSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.agentSubLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.agentSubText {
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: $color-neutral-300;
+}
+
+// Key metrics grid
+.keyMetricsGrid {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.keyMetricItem {
+  display: flex;
+  justify-content: space-between;
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-5;
+  background: $color-white-5;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.keyMetricKey {
+  color: $color-neutral-400;
+}
+
+.keyMetricValue {
+  color: $color-neutral-200;
+}
+
+// Governance metrics
+.governanceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.governanceItem {
+  text-align: center;
+}
+
+.governanceLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.governanceValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-neutral-200;
+}
+
+.governanceValueRed {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-red-400;
+}
+
+.governanceValueYellow {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-yellow-400;
+}
+
+// Composite rating
+.compositeRating {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.compositeRatingValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.compositeRatingMethod {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Risk level badge
+.riskLevelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.riskLevelLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.riskLevelBadge {
+  border-radius: $radius-full;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.riskLevelBadgeHigh {
+  @include risk-badge($color-red-500-20, $color-red-400);
+}
+
+.riskLevelBadgeMedium {
+  @include risk-badge($color-yellow-500-20, $color-yellow-400);
+}
+
+.riskLevelBadgeLow {
+  @include risk-badge($color-green-500-20, $color-green-400);
+}
+
+// --- Agent Grid Overview ---
+.agentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: $bp-sm) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.agentGridButton {
+  border-radius: $radius-xl;
+  border: 1px solid;
+  padding: 0.75rem;
+  text-align: left;
+  transition: all $duration-normal ease;
+
+  &:hover {
+    background: $color-white-5;
+  }
+}
+
+.agentGridButtonActive {
+  border-color: rgba($color-primary, 0.3);
+  background: rgba($color-primary, 0.05);
+}
+
+.agentGridButtonInactive {
+  border-color: $color-white-10;
+  background: $color-card-bg;
+}
+
+.agentGridLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $color-neutral-400;
+  @include truncate;
+}
+
+.agentGridScore {
+  margin-top: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+// --- Safety Supervision ---
+.safetyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.safetyItem {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.safetyLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.safetyValueGreen {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-green-400;
+}
+
+.safetyValueRed {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-red-400;
+}
+
+.safetyValuePrimary {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-primary;
+}
+
+.anomaliesSection {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.anomaliesLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.anomalyItem {
+  font-size: 0.75rem;
+  color: $color-red-400;
+}
+
+// --- Causal Insights ---
+.causalInsightsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.causalInsightRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.causalInsightLabel {
+  color: $color-neutral-400;
+}
+
+.causalInsightValue {
+  color: $color-neutral-200;
+}
+
+// --- Report Button ---
+.reportButton {
+  width: 100%;
+  border-radius: $radius-xl;
+  border: 1px solid rgba($color-primary, 0.3);
+  background: rgba($color-primary, 0.1);
+  padding: 0.625rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: rgba($color-primary, 0.2);
+  }
+}
+
+// --- Report Display ---
+.reportContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reportTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.reportTitleIcon {
+  margin-right: 0.5rem;
+}
+
+.execSummarySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.execSummaryLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.execSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.execSummaryItem {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.execSummaryItemLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.execSummaryItemValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.execSummaryItemValueSm {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-neutral-200;
+}
+
+.keyFactorsSection {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.keyFactorsLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.keyFactorItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: $color-neutral-300;
+}
+
+.keyFactorDot {
+  margin-top: 0.375rem;
+  height: 0.375rem;
+  width: 0.375rem;
+  flex-shrink: 0;
+  border-radius: $radius-full;
+  background: $color-primary;
+}
+
+// Risk assessment
+.riskAssessmentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.riskAssessmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-5;
+  background: $color-white-5;
+  padding: 0.625rem 1rem;
+}
+
+.riskAssessmentKey {
+  font-size: 0.875rem;
+  color: $color-neutral-300;
+}
+
+.riskAssessmentValue {
+  font-size: 0.875rem;
+  color: $color-neutral-200;
+}
+
+// Agent consensus
+.agentConsensusSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.agentConsensusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.agentConsensusItem {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.agentConsensusItemLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.agentConsensusItemValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-neutral-200;
+}
+
+// Methodology
+.methodologySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.methodologyLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.methodologyText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Combined risk score bar
+.combinedRiskBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: $radius-lg;
+  border: 1px solid rgba($color-primary, 0.2);
+  background: rgba($color-primary, 0.05);
+  padding: 0.75rem 1rem;
+}
+
+.combinedRiskLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-neutral-200;
+}
+
+.combinedRiskValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+// --- Report loading ---
+.reportLoadingInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem 0;
+}
+
+.reportLoadingSpinner {
+  height: 1.25rem;
+  width: 1.25rem;
+  animation: spin 1s linear infinite;
+  color: $color-primary;
+}
+
+.reportLoadingText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
