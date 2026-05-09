@@ -1,7 +1,11 @@
 "use client";
 
-const CODE_EXAMPLE = `// Example: Make a prediction
-const response = await fetch('http://localhost:8000/predict', {
+import { cn } from "@/lib/utils";
+import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
+import styles from "./docs-content.module.scss";
+
+const CODE_EXAMPLE = `// Example: Make a credit risk prediction via API Gateway
+const response = await fetch('http://localhost:4000/client-predict', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -23,52 +27,72 @@ console.log(result);`;
 const PYTHON_EXAMPLE = `import requests
 
 response = requests.post(
-    'http://localhost:8000/predict',
-    json={
-        'RevolvingUtilizationOfUnsecuredLines': 0.766,
-        'age': 45, 'DebtRatio': 0.803,
-        'MonthlyIncome': 9120.0,
-    }
+  'http://localhost:4000/client-predict',
+  json={
+    'RevolvingUtilizationOfUnsecuredLines': 0.766,
+    'age': 45,
+    'DebtRatio': 0.803,
+    'MonthlyIncome': 9120.0,
+    'NumberOfTime30_59DaysPastDueNotWorse': 2,
+    'NumberOfOpenCreditLinesAndLoans': 13,
+    'NumberOfTimes90DaysLate': 0,
+    'NumberRealEstateLoansOrLines': 6,
+    'NumberOfTime60_89DaysPastDueNotWorse': 0,
+    'NumberOfDependents': 2,
+  }
 )
 result = response.json()
 print(result)`;
 
 const ENDPOINTS = [
-  { method: "POST", path: "/predict", description: "Make a credit risk prediction", params: ["RevolvingUtilizationOfUnsecuredLines", "age", "DebtRatio", "MonthlyIncome"] },
-  { method: "POST", path: "/similar-applicants", description: "Find similar past applicants using FAISS", params: ["k (optional, default=10)"] },
-  { method: "POST", path: "/explain-denial", description: "Explain denial with SHAP and counter-examples", params: ["k (optional, default=20)"] },
-  { method: "POST", path: "/thin-file-predict", description: "Enhanced prediction for thin-file applicants", params: ["k (optional, default=5)"] },
-  { method: "POST", path: "/monitor-drift", description: "Monitor model drift via cluster centroids", params: ["n_clusters (optional, default=10)"] },
-  { method: "POST", path: "/peer-groups", description: "Segment customers into peer groups", params: ["n_clusters (optional, default=5)"] },
+  { method: "POST", path: "/client-predict", description: "Make a credit risk prediction (routes to Credit Scoring on port 8000)", params: ["RevolvingUtilizationOfUnsecuredLines", "age", "DebtRatio", "MonthlyIncome", "...10 features total"] },
+  { method: "POST", path: "/similar-applicants", description: "Find similar past applicants using FAISS (routes to Credit Scoring on port 8000)", params: ["k (optional, default=10)"] },
+  { method: "POST", path: "/explain-denial", description: "Explain denial with SHAP and counter-examples (routes to Credit Scoring on port 8000)", params: ["k (optional, default=20)"] },
+  { method: "POST", path: "/thin-file-predict", description: "Enhanced prediction for thin-file applicants (routes to Credit Scoring on port 8000)", params: ["k (optional, default=5)"] },
+  { method: "POST", path: "/monitor-drift", description: "Monitor model drift via cluster centroids (routes to Credit Scoring on port 8000)", params: ["n_clusters (optional, default=10)"] },
+  { method: "POST", path: "/peer-groups", description: "Segment customers into peer groups (routes to Credit Scoring on port 8000)", params: ["n_clusters (optional, default=5)"] },
+  { method: "POST", path: "/similar", description: "Check fraud similarity (routes to Fraud Detection on port 8002)", params: ["k (optional, default=10)"] },
+  { method: "GET", path: "/fraud-rings", description: "Get detected fraud rings (routes to Fraud Detection on port 8002)", params: [] },
+  { method: "POST", path: "/evaluate", description: "Evaluate credit policy decision (routes to Policy on port 8003)", params: ["risk_score", "requested_amount", "monthly_income", "debt_ratio"] },
+  { method: "POST", path: "/score", description: "Get combined augmented score (routes to Augmented Scoring on port 8008)", params: ["applicant_id", "features"] },
+  { method: "POST", path: "/insights", description: "Get human-readable analysis insights (routes to Augmented Scoring on port 8008)", params: ["applicant_id", "features"] },
+  { method: "POST", path: "/enrich", description: "Enrich applicant data with bureau/banking data (routes to Data Enrichment on port 8006)", params: ["client_id", "name", "email", "ssn", "phone", "address"] },
+  { method: "POST", path: "/apply", description: "Submit loan application workflow (routes to Orchestrator on port 8005)", params: ["applicant", "requested_amount"] },
+  { method: "POST", path: "/synthetic/generate", description: "Generate synthetic test data (routes to Synthetic Data on port 8007)", params: ["num_records", "apply_constraints", "random_seed"] },
 ];
 
 const MODELS = [
-  { icon: "🌳", title: "LightGBM", desc: "Gradient boosting framework for high-accuracy predictions", details: ["Fast training", "Low memory usage", "High accuracy"] },
-  { icon: "🔍", title: "SHAP", desc: "Explainable AI for feature importance", details: ["Feature attribution", "Model-agnostic", "Visual explanations"] },
-  { icon: "📊", title: "FAISS", desc: "Vector similarity search for finding similar applicants", details: ["Fast nearest neighbor", "Scalable", "Memory efficient"] },
-  { icon: "🎯", title: "StandardScaler", desc: "Feature normalization for consistent predictions", details: ["Zero mean", "Unit variance", "Prevents bias"] },
+  { icon: "\u{1F333}", title: "LightGBM", desc: "Gradient boosting framework for high-accuracy credit predictions", details: ["Fast training", "Low memory usage", "High accuracy", "Feature importance via SHAP"] },
+  { icon: "\u{1F50D}", title: "SHAP", desc: "Explainable AI for feature attribution and denial explanations", details: ["Feature attribution", "Model-agnostic", "Visual explanations", "Regulatory compliance"] },
+  { icon: "\u{1F4CA}", title: "FAISS", desc: "Vector similarity search for finding similar applicants and fraud patterns", details: ["Fast nearest neighbor", "Scalable to millions", "Memory efficient", "Used by both Credit & Fraud services"] },
+  { icon: "\u{1F9E0}", title: "SNN", desc: "Spiking Neural Network for fraud ring detection", details: ["Graph-based detection", "Unsupervised learning", "Ring pattern recognition", "Adaptive thresholds"] },
+  { icon: "\u{1F52C}", title: "Causal Inference", desc: "What-if analysis and counterfactual estimation", details: ["Propensity scoring", "Treatment effect estimation", "Counterfactual scenarios", "Uplift modeling"] },
+  { icon: "\u{1F310}", title: "Social Capital", desc: "Network analysis for creditworthiness assessment", details: ["Centrality metrics", "Community detection", "Anomaly detection", "30% weight in augmented scoring"] },
 ];
 
 const QUICK_START_STEPS = [
-  { step: 1, title: "Start the Server", code: "cd server && python main.py", desc: "The API will be available at http://localhost:8000" },
-  { step: 2, title: "Verify Health", code: "curl http://localhost:8000/health", desc: "Check that the model and FAISS index are loaded" },
-  { step: 3, title: "Make a Prediction", code: "curl -X POST http://localhost:8000/predict -H \"Content-Type: application/json\" -d '{...}'", desc: "Send applicant data to get a risk prediction" },
+  { step: 1, title: "Start All Services", code: "bash scripts/start-all.sh", desc: "Starts all microservices (Credit Scoring, Fraud, Policy, etc.) and the API Gateway on port 4000" },
+  { step: 2, title: "Start the Frontend", code: "cd client && npm run dev", desc: "The Next.js dashboard will be available at http://localhost:3000" },
+  { step: 3, title: "Verify Health", code: "curl http://localhost:4000/health", desc: "Check that the API Gateway and backend services are running" },
+  { step: 4, title: "Make a Prediction", code: "curl -X POST http://localhost:4000/client-predict -H \"Content-Type: application/json\" -d '{...}'", desc: "Send applicant data through the gateway to get a risk prediction" },
 ];
 
 export { CODE_EXAMPLE, PYTHON_EXAMPLE, ENDPOINTS, MODELS, QUICK_START_STEPS };
 
 export function DocsHeader() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-dark">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="/" className="flex items-center space-x-3">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg"><span className="text-white font-bold text-lg">CC</span></div>
-          <span className="font-display font-bold text-xl text-white">CredsCore</span>
+    <nav className={styles.docsNav}>
+      <div className={styles.docsNavInner}>
+        <a href="/" className={styles.docsNavBrand}>
+          <div className={styles.docsNavLogo}>
+            <span>CC</span>
+          </div>
+          <span className={styles.docsNavBrandName}>CredsCore</span>
         </a>
-        <div className="flex items-center space-x-6">
-          <a href="/" className="text-gray-300 hover:text-white transition-colors">Home</a>
-          <a href="/dashboard" className="text-gray-300 hover:text-white transition-colors">Dashboard</a>
-          <a href="/docs" className="text-white font-semibold">Docs</a>
+        <div className={styles.docsNavLinks}>
+          <a href="/" className={styles.docsNavLink}>Home</a>
+          <a href="/dashboard" className={styles.docsNavLink}>Dashboard</a>
+          <a href="/docs" className={styles.docsNavLinkActive}>Docs</a>
         </div>
       </div>
     </nav>
@@ -77,11 +101,18 @@ export function DocsHeader() {
 
 export function DocsSidebar({ sections, activeSection, onSectionChange }: { sections: { id: string; title: string; icon: string }[]; activeSection: string; onSectionChange: (id: string) => void }) {
   return (
-    <aside className="fixed left-0 top-24 w-64 h-[calc(100vh-6rem)] p-6 border-r border-card-border overflow-y-auto">
-      <nav className="space-y-2">
+    <aside className={styles.sidebar}>
+      <nav className={styles.sidebarNav}>
         {sections.map((section) => (
-          <button key={section.id} onClick={() => onSectionChange(section.id)} className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-300 ${activeSection === section.id ? "bg-primary/20 text-white font-semibold shadow-lg" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}>
-            <span className="text-xl">{section.icon}</span><span>{section.title}</span>
+          <button
+            key={section.id}
+            onClick={() => onSectionChange(section.id)}
+            className={cn(
+              activeSection === section.id ? styles.sidebarItemActive : styles.sidebarItem
+            )}
+          >
+            <span>{section.icon}</span>
+            <span>{section.title}</span>
           </button>
         ))}
       </nav>
@@ -90,40 +121,95 @@ export function DocsSidebar({ sections, activeSection, onSectionChange }: { sect
 }
 
 export function OverviewContent() {
-  const stats = [{ icon: "🎯", title: "99.2% Accuracy", desc: "High-precision predictions" }, { icon: "⚡", title: "< 100ms Response", desc: "Real-time inference" }, { icon: "🔍", title: "Explainable AI", desc: "SHAP-based explanations" }];
-  const backendItems = [{ color: "bg-primary", text: "LightGBM for predictions" }, { color: "bg-accent-cyan", text: "SHAP for explanations" }, { color: "bg-accent-lavender", text: "FAISS for similarity search" }];
-  const frontendItems = [{ color: "bg-primary", text: "Modern UI with Tailwind CSS" }, { color: "bg-accent-cyan", text: "Interactive visualizations" }, { color: "bg-accent-lavender", text: "Real-time API integration" }];
+  const stats = [
+    { icon: "\u{1F3AF}", title: "99.2% Accuracy", desc: "High-precision predictions" },
+    { icon: "\u26A1", title: "< 100ms Response", desc: "Real-time inference" },
+    { icon: "\u{1F50D}", title: "Explainable AI", desc: "SHAP-based explanations" },
+  ];
+  const backendItems = [
+    { dotClass: styles.architectureDotPrimary, text: "LightGBM for predictions" },
+    { dotClass: styles.architectureDotCyan, text: "SHAP for explanations" },
+    { dotClass: styles.architectureDotPurple, text: "FAISS for similarity search" },
+    { dotClass: styles.architectureDotPrimary, text: "SNN for fraud ring detection" },
+    { dotClass: styles.architectureDotCyan, text: "Causal inference for what-if analysis" },
+    { dotClass: styles.architectureDotPurple, text: "Social capital for network scoring" },
+  ];
+  const frontendItems = [
+    { dotClass: styles.architectureDotPrimary, text: "Modern UI with Tailwind CSS v4" },
+    { dotClass: styles.architectureDotCyan, text: "Interactive visualizations" },
+    { dotClass: styles.architectureDotPurple, text: "Real-time API integration via Gateway" },
+  ];
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-white mb-6">CredsCore Documentation</h1>
-      <p className="text-lg text-gray-400 mb-8 max-w-3xl">CredsCore is an AI-powered credit risk assessment platform that combines LightGBM, SHAP explanations, and FAISS vector search to provide accurate, explainable, and fast credit decisions.</p>
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        {stats.map((item, i) => (<div key={i} className="card"><div className="text-3xl mb-3">{item.icon}</div><h3 className="font-semibold text-white mb-1">{item.title}</h3><p className="text-sm text-gray-400">{item.desc}</p></div>))}
+    <div className={styles.contentSection}>
+      <h1 className={styles.pageTitle}>CredsCore Documentation</h1>
+      <p className={styles.pageDescription}>CredsCore is an AI-powered credit risk assessment platform that combines LightGBM, SHAP explanations, FAISS vector search, SNN fraud detection, causal inference, and social capital analysis to provide accurate, explainable, and fast credit decisions.</p>
+
+      <div className={styles.overviewStatsGrid}>
+        {stats.map((item, i) => (
+          <ShimmerBorder key={i} borderRadius="1rem">
+            <div className={styles.overviewStatCard}>
+              <div className={styles.overviewStatIcon}>{item.icon}</div>
+              <h3 className={styles.overviewStatTitle}>{item.title}</h3>
+              <p className={styles.overviewStatDesc}>{item.desc}</p>
+            </div>
+          </ShimmerBorder>
+        ))}
       </div>
-      <div className="card">
-        <h2 className="font-display text-2xl font-bold text-white mb-4">Architecture</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div><h3 className="font-semibold text-white mb-3">Backend (FastAPI)</h3><ul className="space-y-2 text-gray-400">{backendItems.map((item, i) => (<li key={i} className="flex items-center space-x-2"><span className={`w-2 h-2 ${item.color} rounded-full`} /><span>{item.text}</span></li>))}</ul></div>
-          <div><h3 className="font-semibold text-white mb-3">Frontend (Next.js)</h3><ul className="space-y-2 text-gray-400">{frontendItems.map((item, i) => (<li key={i} className="flex items-center space-x-2"><span className={`w-2 h-2 ${item.color} rounded-full`} /><span>{item.text}</span></li>))}</ul></div>
+
+      <ShimmerBorder borderRadius="1rem">
+        <div className={styles.architectureCard}>
+          <h2 className={styles.architectureTitle}>Architecture</h2>
+          <div className={styles.architectureGrid}>
+            <div>
+              <h3 className={styles.architectureColumnTitle}>Backend (FastAPI Microservices)</h3>
+              <ul className={styles.architectureList}>
+                {backendItems.map((item, i) => (
+                  <li key={i} className={styles.architectureItem}>
+                    <span className={item.dotClass} />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className={styles.architectureColumnTitle}>Frontend (Next.js 16)</h3>
+              <ul className={styles.architectureList}>
+                {frontendItems.map((item, i) => (
+                  <li key={i} className={styles.architectureItem}>
+                    <span className={item.dotClass} />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
+      </ShimmerBorder>
     </div>
   );
 }
 
 export function QuickStartContent() {
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-white mb-6">Quick Start Guide</h1>
-      <p className="text-lg text-gray-400 mb-8 max-w-3xl">Get up and running with CredsCore in minutes.</p>
-      <div className="space-y-6">
+    <div className={styles.contentSection}>
+      <h1 className={styles.pageTitle}>Quick Start Guide</h1>
+      <p className={styles.pageDescription}>Get up and running with CredsCore in minutes. All frontend requests go through the API Gateway at <code className={styles.inlineCode}>localhost:4000</code>.</p>
+      <div className={styles.quickStartList}>
         {QUICK_START_STEPS.map((item) => (
-          <div key={item.step} className="card">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">{item.step}</div>
-              <div className="flex-1"><h3 className="font-display text-xl font-bold text-white mb-2">{item.title}</h3><p className="text-gray-400 mb-4">{item.desc}</p><div className="bg-card-bg rounded-xl p-4 font-mono text-sm text-white overflow-x-auto">{item.code}</div></div>
+          <ShimmerBorder key={item.step} borderRadius="1rem">
+            <div className={styles.quickStartCard}>
+              <div className={styles.quickStartNumber}>
+                {item.step}
+              </div>
+              <div className={styles.quickStartContent}>
+                <h3 className={styles.quickStartTitle}>{item.title}</h3>
+                <p className={styles.quickStartDesc}>{item.desc}</p>
+                <div className={styles.codeBlock}>
+                  <code className={styles.codeBlockText}>{item.code}</code>
+                </div>
+              </div>
             </div>
-          </div>
+          </ShimmerBorder>
         ))}
       </div>
     </div>
@@ -132,29 +218,81 @@ export function QuickStartContent() {
 
 export function ApiReferenceContent() {
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-white mb-6">API Reference</h1>
-      <p className="text-lg text-gray-400 mb-8 max-w-3xl">Complete API documentation for all CredsCore endpoints.</p>
-      <div className="card mb-8"><h2 className="font-display text-2xl font-bold text-white mb-4">Base URL</h2><div className="bg-card-bg rounded-xl p-4 font-mono text-white">http://localhost:8000</div></div>
-      <div className="card"><h2 className="font-display text-2xl font-bold text-white mb-4">Authentication</h2><p className="text-gray-400 mb-4">Currently, the API does not require authentication for local development.</p><div className="bg-accent-gold/10 border border-accent-gold/30 rounded-xl p-4"><p className="text-white font-medium">For production deployments, implement proper authentication.</p></div></div>
+    <div className={styles.contentSection}>
+      <h1 className={styles.pageTitle}>API Reference</h1>
+      <p className={styles.pageDescription}>Complete API documentation for all CredsCore endpoints.</p>
+
+      <ShimmerBorder borderRadius="1rem">
+        <div className={styles.apiSection}>
+          <h2 className={styles.apiSectionTitle}>Base URL</h2>
+          <div className={styles.codeBlock}>
+            <code className={styles.codeBlockText}>http://localhost:4000</code>
+          </div>
+          <p className={styles.apiSectionDescription}>All requests go through the API Gateway which routes to the appropriate microservice.</p>
+        </div>
+      </ShimmerBorder>
+
+      <ShimmerBorder borderRadius="1rem">
+        <div className={styles.apiSection}>
+          <h2 className={styles.apiSectionTitle}>Gateway Routing</h2>
+          <p className={styles.apiSectionDescription}>The gateway proxies requests to the correct backend service based on path:</p>
+          <div className={styles.codeBlock}>
+            <pre className={styles.codePre}>{`/client-predict, /similar-applicants -> Credit Scoring (8000)
+/similar, /fraud-rings -> Fraud Detection (8002)
+/evaluate -> Policy (8003)
+/apply, /applications -> Orchestrator (8005)
+/enrich -> Data Enrichment (8006)
+/synthetic/* -> Synthetic Data (8007)
+/score, /insights, /combined-score -> Augmented Scoring (8008)`}</pre>
+          </div>
+        </div>
+      </ShimmerBorder>
+
+      <ShimmerBorder borderRadius="1rem">
+        <div className={styles.apiSection}>
+          <h2 className={styles.apiSectionTitle}>Authentication</h2>
+          <p className={styles.apiSectionDescription}>Currently, the API does not require authentication for local development.</p>
+          <div className={styles.warningBox}>
+            <p className={styles.warningText}>For production deployments, implement proper authentication.</p>
+          </div>
+        </div>
+      </ShimmerBorder>
     </div>
   );
 }
 
 export function EndpointsContent() {
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-white mb-6">API Endpoints</h1>
-      <p className="text-lg text-gray-400 mb-8 max-w-3xl">All available endpoints and their parameters.</p>
-      <div className="space-y-4">
+    <div className={styles.contentSection}>
+      <h1 className={styles.pageTitle}>API Endpoints</h1>
+      <p className={styles.pageDescription}>All available endpoints and their parameters. All requests go through the API Gateway at <code className={styles.inlineCode}>localhost:4000</code>.</p>
+      <div className={styles.endpointsList}>
         {ENDPOINTS.map((endpoint, i) => (
-          <div key={i} className="card">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3"><span className="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-semibold rounded-lg">{endpoint.method}</span><code className="font-mono text-white font-semibold">{endpoint.path}</code></div>
+          <ShimmerBorder key={i} borderRadius="1rem">
+            <div className={styles.endpointCard}>
+              <div className={styles.endpointHeader}>
+                <span className={cn(
+                  endpoint.method === "GET" ? styles.methodBadgeGet : styles.methodBadgePost
+                )}>
+                  {endpoint.method}
+                </span>
+                <code className={styles.endpointPath}>{endpoint.path}</code>
+              </div>
+              <p className={styles.endpointDescription}>{endpoint.description}</p>
+              {endpoint.params.length > 0 && (
+                <div>
+                  <h4 className={styles.paramTitle}>Parameters:</h4>
+                  <div className={styles.paramChips}>
+                    {endpoint.params.map((param, j) => (
+                      <span key={j} className={styles.paramChip}>
+                        {param}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="text-gray-400 mb-4">{endpoint.description}</p>
-            <div><h4 className="font-semibold text-white text-sm mb-2">Parameters:</h4><div className="flex flex-wrap gap-2">{endpoint.params.map((param, j) => (<span key={j} className="px-3 py-1 bg-primary/20 text-white text-sm rounded-lg">{param}</span>))}</div></div>
-          </div>
+          </ShimmerBorder>
         ))}
       </div>
     </div>
@@ -163,28 +301,53 @@ export function EndpointsContent() {
 
 export function ExamplesContent() {
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-white mb-6">Code Examples</h1>
-      <p className="text-lg text-gray-400 mb-8 max-w-3xl">Copy-paste examples to get started quickly.</p>
-      <div className="card"><h2 className="font-display text-2xl font-bold text-white mb-4">JavaScript / TypeScript</h2><div className="bg-card-bg rounded-xl p-6 font-mono text-sm text-white overflow-x-auto"><pre className="whitespace-pre-wrap">{CODE_EXAMPLE}</pre></div></div>
-      <div className="card mt-6"><h2 className="font-display text-2xl font-bold text-white mb-4">Python</h2><div className="bg-card-bg rounded-xl p-6 font-mono text-sm text-white overflow-x-auto"><pre>{PYTHON_EXAMPLE}</pre></div></div>
+    <div className={styles.contentSection}>
+      <h1 className={styles.pageTitle}>Code Examples</h1>
+      <p className={styles.pageDescription}>Copy-paste examples to get started quickly. All requests go through the API Gateway at <code className={styles.inlineCode}>localhost:4000</code>.</p>
+
+      <ShimmerBorder borderRadius="1rem">
+        <div className={styles.exampleCard}>
+          <h2 className={styles.exampleTitle}>JavaScript / TypeScript</h2>
+          <div className={styles.exampleCodeBlock}>
+            <pre className={styles.codePre}>{CODE_EXAMPLE}</pre>
+          </div>
+        </div>
+      </ShimmerBorder>
+
+      <ShimmerBorder borderRadius="1rem">
+        <div className={styles.exampleCard}>
+          <h2 className={styles.exampleTitle}>Python</h2>
+          <div className={styles.exampleCodeBlock}>
+            <pre className={styles.codePre}>{PYTHON_EXAMPLE}</pre>
+          </div>
+        </div>
+      </ShimmerBorder>
     </div>
   );
 }
 
 export function ModelsContent() {
   return (
-    <div className="animate-fade-in">
-      <h1 className="font-display text-4xl font-bold text-white mb-6">ML Models</h1>
-      <p className="text-lg text-gray-400 mb-8 max-w-3xl">Understanding the models behind CredsCore.</p>
-      <div className="grid md:grid-cols-2 gap-6">
+    <div className={styles.contentSection}>
+      <h1 className={styles.pageTitle}>ML Models</h1>
+      <p className={styles.pageDescription}>Understanding the models behind CredsCore. The Augmented Scoring service combines ML (60%), Social (30%), and Causal (10%) scores.</p>
+      <div className={styles.modelsGrid}>
         {MODELS.map((model, i) => (
-          <div key={i} className="card">
-            <div className="text-4xl mb-4">{model.icon}</div>
-            <h3 className="font-display text-xl font-bold text-white mb-2">{model.title}</h3>
-            <p className="text-gray-400 mb-4">{model.desc}</p>
-            <ul className="space-y-2">{model.details.map((detail, j) => (<li key={j} className="flex items-center space-x-2 text-sm text-gray-400"><span className="w-1.5 h-1.5 bg-primary rounded-full" /><span>{detail}</span></li>))}</ul>
-          </div>
+          <ShimmerBorder key={i} borderRadius="1rem">
+            <div className={styles.modelCard}>
+              <div className={styles.modelIcon}>{model.icon}</div>
+              <h3 className={styles.modelTitle}>{model.title}</h3>
+              <p className={styles.modelDesc}>{model.desc}</p>
+              <ul className={styles.modelDetailsList}>
+                {model.details.map((detail, j) => (
+                  <li key={j} className={styles.modelDetailItem}>
+                    <span className={styles.modelDetailDot} />
+                    <span>{detail}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </ShimmerBorder>
         ))}
       </div>
     </div>
