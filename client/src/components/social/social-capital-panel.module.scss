@@ -1,0 +1,396 @@
+@use "@/styles/variables" as *;
+
+.container {
+  @include card-static;
+  border-radius: $radius-2xl;
+  padding: 1.5rem;
+}
+
+.loadingContainer {
+  @include card-static;
+  border-radius: $radius-2xl;
+  padding: 1.5rem;
+}
+
+.loadingInner {
+  @include flex-center;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 3rem 0;
+}
+
+.loadingSpinner {
+  height: 2rem;
+  width: 2rem;
+  animation: spin 1s linear infinite;
+  color: $color-primary;
+}
+
+.spinnerCircle {
+  opacity: 0.25;
+}
+
+.spinnerPath {
+  opacity: 0.75;
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.emptyContainer {
+  @include card-static;
+  border-radius: $radius-2xl;
+  padding: 1.5rem;
+}
+
+.emptyInner {
+  @include flex-center;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 2rem 0;
+}
+
+.emptyIcon {
+  font-size: 1.5rem;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  flex: 1;
+}
+
+.title {
+  font-family: $font-display;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.titleIcon {
+  margin-right: 0.5rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.headerStats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.statCenter {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.metricsContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.scoreCard {
+  padding: 1.25rem;
+}
+
+.scoreHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.scoreLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.scoreValue {
+  margin-top: 0.25rem;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.scoreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem 1.5rem;
+}
+
+.scoreSubItem {
+  text-align: right;
+}
+
+.scoreSubLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.scoreSubValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-neutral-200;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: $bp-sm) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.metricItem {
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.metricValue {
+  margin-top: 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.summaryCard {
+  padding: 1.25rem;
+}
+
+.summaryTitle {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.summaryText {
+  font-size: 0.875rem;
+  color: $color-neutral-300;
+}
+
+.networkCard {
+  padding: 1.25rem;
+}
+
+.networkTitle {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.networkStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.networkStatItem {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.networkStatLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.networkStatValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $color-neutral-200;
+}
+
+.nodeLegend {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nodeLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: $radius-full;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.25rem 0.625rem;
+}
+
+.nodeDot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: $radius-full;
+}
+
+.nodeDotIndividual {
+  background: $color-primary;
+}
+
+.nodeDotOrganization {
+  background: $color-accent-cyan;
+}
+
+.nodeDotBusiness {
+  background: #a78bfa;
+}
+
+.nodeDotOther {
+  background: $color-accent-pink;
+}
+
+.nodeLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-300;
+}
+
+.moreNodes {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+  align-self: center;
+}
+
+.risksContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.riskItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.riskInfo {
+  flex: 1;
+}
+
+.riskName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-neutral-200;
+}
+
+.riskLevel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.riskBarSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.riskBarTrack {
+  height: 0.5rem;
+  width: 6rem;
+  overflow: hidden;
+  border-radius: $radius-full;
+  background: $color-white-10;
+}
+
+.riskBarFill {
+  height: 100%;
+  border-radius: $radius-full;
+  transition: all $duration-normal ease;
+}
+
+.riskBarFillLow {
+  background: $color-green-500;
+}
+
+.riskBarFillMedium {
+  background: $color-yellow-500;
+}
+
+.riskBarFillHigh {
+  background: $color-red-500;
+}
+
+.riskValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 3rem;
+  text-align: right;
+}
+
+.riskValueLow {
+  color: $color-green-400;
+}
+
+.riskValueMedium {
+  color: $color-yellow-400;
+}
+
+.riskValueHigh {
+  color: $color-red-400;
+}
+
+.noDataContainer {
+  border-radius: $radius-xl;
+  border: 1px solid $color-white-10;
+  background: $color-card-bg;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.noDataText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
