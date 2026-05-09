@@ -1,0 +1,77 @@
+@use "@/styles/variables" as *;
+
+.chartContainer {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.riskBadge {
+  border-radius: $radius-full;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.chartArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chartWrapper {
+  width: 6rem;
+  flex-shrink: 0;
+}
+
+.percentage {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: $color-neutral-100;
+}
+
+.probabilityLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.predictionLabel {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tooltip {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-card-bg;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  box-shadow: $shadow-hard;
+}
+
+.tooltipLabel {
+  color: $color-neutral-400;
+}
+
+.tooltipValue {
+  font-weight: 600;
+  color: $color-neutral-100;
+}

@@ -1,0 +1,27 @@
+@use "@/styles/variables" as *;
+
+.pageHeader {
+  margin-bottom: 1.5rem;
+}
+
+.pageTitle {
+  font-family: $font-display;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $color-white;
+  line-height: 1.2;
+
+  @media (min-width: 768px) {
+    font-size: 1.875rem;
+  }
+}
+
+.pageSubtitle {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+.tabBar {
+  margin-bottom: 2rem;
+}
