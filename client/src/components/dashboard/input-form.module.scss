@@ -1,0 +1,89 @@
+@use "@/styles/variables" as *;
+
+.card {
+  @include card-base;
+  padding: 1.25rem;
+}
+
+.cardTitle {
+  font-family: $font-display;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-white;
+  margin-bottom: 1rem;
+}
+
+.fieldsContainer {
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.submitButton {
+  margin-top: 1rem;
+  width: 100%;
+  border-radius: $radius-lg;
+  background-color: $color-primary;
+  padding: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-dark-green;
+  transition: all $duration-normal ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background-color: $color-primary-400;
+    box-shadow: $shadow-glow;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(243, 202, 64, 0.5);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.submitButtonPending {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  height: 1rem;
+  width: 1rem;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+.spinnerCircle {
+  opacity: 0.25;
+}
+
+.spinnerPath {
+  opacity: 0.75;
+}

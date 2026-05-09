@@ -1,0 +1,216 @@
+@use "@/styles/variables" as *;
+
+.resultHeader {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resultHeaderLeft {
+  flex: 1;
+}
+
+.resultTitle {
+  font-family: $font-display;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-white;
+  margin-bottom: 0.25rem;
+}
+
+.resultMessage {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.riskBadge {
+  border-radius: $radius-sm;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.riskLow {
+  @include risk-badge($color-green-500-20, $color-green-400);
+}
+
+.riskMedium {
+  @include risk-badge($color-yellow-500-20, $color-yellow-400);
+}
+
+.riskHigh {
+  @include risk-badge($color-red-500-20, $color-red-400);
+}
+
+.chartContainer {
+  border-radius: $radius-lg;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 1.25rem;
+}
+
+.chartContainerSpaced {
+  margin-top: 1rem;
+  border-radius: $radius-lg;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 1.25rem;
+}
+
+// StatsGrid
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.25rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.statCard {
+  @include card-base;
+  padding: 1.25rem;
+}
+
+.statHeader {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statIcon {
+  font-size: 1.25rem;
+}
+
+.trendUp {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $color-green-400;
+}
+
+.trendDown {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $color-red-400;
+}
+
+.statValue {
+  font-family: $font-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-white;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+// RecentActivityTable
+.activityCard {
+  @include card-base;
+  padding: 1.25rem;
+}
+
+.activityTitle {
+  font-family: $font-display;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $color-white;
+  margin-bottom: 1.25rem;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.tableHead {
+  border-bottom: 1px solid $color-white-10;
+}
+
+.tableHeaderCell {
+  white-space: nowrap;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.tableRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.tableCell {
+  white-space: nowrap;
+  padding: 0.5rem;
+}
+
+.tableCellMedium {
+  white-space: nowrap;
+  padding: 0.5rem;
+  font-weight: 500;
+  color: $color-white;
+}
+
+.tableCellMuted {
+  white-space: nowrap;
+  padding: 0.5rem;
+  color: $color-neutral-400;
+}
+
+.riskTag {
+  border-radius: $radius-sm;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.riskTagLow {
+  @include risk-tag($color-green-500-20, $color-green-400);
+}
+
+.riskTagMedium {
+  @include risk-tag($color-yellow-500-20, $color-yellow-400);
+}
+
+.riskTagHigh {
+  @include risk-tag($color-red-500-20, $color-red-400);
+}
+
+.statusTag {
+  border-radius: $radius-sm;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusApproved {
+  @include risk-tag($color-green-500-20, $color-green-400);
+}
+
+.statusDenied {
+  @include risk-tag($color-red-500-20, $color-red-400);
+}
+
+.statusReview {
+  @include risk-tag($color-yellow-500-20, $color-yellow-400);
+}

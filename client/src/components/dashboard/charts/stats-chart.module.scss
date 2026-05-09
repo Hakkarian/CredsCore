@@ -1,0 +1,19 @@
+@use "@/styles/variables" as *;
+
+.title {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.tooltip {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-card-bg;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+  box-shadow: $shadow-hard;
+}
