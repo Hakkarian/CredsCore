@@ -1,0 +1,9 @@
+@use "@/styles/variables" as *;
+
+.main {
+  min-height: 100vh;
+  background: $color-dark-green;
+  color: $color-white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
