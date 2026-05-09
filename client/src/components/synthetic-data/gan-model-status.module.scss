@@ -1,0 +1,176 @@
+@use "@/styles/variables" as *;
+
+.container {
+  padding: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statusInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.statusDot {
+  height: 0.75rem;
+  width: 0.75rem;
+  border-radius: $radius-full;
+}
+
+.statusDotReady {
+  @extend .statusDot;
+  background: $color-green-500;
+}
+
+.statusDotTraining {
+  @extend .statusDot;
+  background: $color-primary;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.statusDotError {
+  @extend .statusDot;
+  background: $color-red-500;
+}
+
+.statusDotIdle {
+  @extend .statusDot;
+  background: $color-neutral-500;
+}
+
+.statusText {
+  // container for model name + sub-text
+}
+
+.modelName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e5e5e5;
+}
+
+.modelSubtext {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.statusBadge {
+  border-radius: $radius-lg;
+  border: 1px solid;
+  padding: 0.25rem 0.75rem;
+}
+
+.statusBadgeReady {
+  @extend .statusBadge;
+  background: rgba($color-green-500, 0.1);
+  border-color: rgba($color-green-500, 0.2);
+}
+
+.statusBadgeTraining {
+  @extend .statusBadge;
+  background: rgba($color-primary, 0.1);
+  border-color: rgba($color-primary, 0.2);
+}
+
+.statusBadgeError {
+  @extend .statusBadge;
+  background: rgba($color-red-500, 0.1);
+  border-color: rgba($color-red-500, 0.2);
+}
+
+.statusBadgeIdle {
+  @extend .statusBadge;
+  background: $color-white-5;
+  border-color: $color-white-10;
+}
+
+.statusTextInner {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.statusTextReady {
+  @extend .statusTextInner;
+  color: $color-green-400;
+}
+
+.statusTextTraining {
+  @extend .statusTextInner;
+  color: $color-primary;
+}
+
+.statusTextError {
+  @extend .statusTextInner;
+  color: $color-red-400;
+}
+
+.statusTextIdle {
+  @extend .statusTextInner;
+  color: $color-neutral-400;
+}
+
+// Training Progress
+.trainingProgress {
+  margin-top: 0.75rem;
+}
+
+.progressBar {
+  height: 0.375rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: $radius-full;
+  background: $color-white-10;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: $radius-full;
+  background: $color-primary;
+  transition: all $duration-normal;
+}
+
+// Metrics
+.metricsGrid {
+  margin-top: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.metricCard {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background: $color-white-5;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.metricValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e5e5e5;
+}
+
+.metricValuePrimary {
+  @extend .metricValue;
+  color: $color-primary;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
