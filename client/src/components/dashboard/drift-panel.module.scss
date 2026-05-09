@@ -1,0 +1,375 @@
+@use "@/styles/variables" as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.sectionTitleMb3 {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.sectionTitleMb2 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+// Upload / Dropzone
+.uploadHeading {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-neutral-100;
+}
+
+.uploadIcon {
+  margin-right: 0.5rem;
+}
+
+.dropzone {
+  cursor: pointer;
+  border-radius: $radius-xl;
+  border: 2px dashed $color-white-10;
+  padding: 1.5rem;
+  text-align: center;
+  transition: border-color $duration-fast ease, background-color $duration-fast ease;
+
+  &:hover {
+    border-color: $color-white-20;
+    background-color: $color-white-5;
+  }
+}
+
+.dropzoneActive {
+  cursor: pointer;
+  border-radius: $radius-xl;
+  border: 2px dashed $color-primary;
+  padding: 1.5rem;
+  text-align: center;
+  background-color: rgba($color-primary, 0.05);
+  transition: border-color $duration-fast ease, background-color $duration-fast ease;
+}
+
+.dropzoneContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dropzoneFileName {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-primary;
+}
+
+.dropzoneFileCount {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.dropzonePlaceholder {
+  font-size: 0.875rem;
+  color: $color-neutral-500;
+}
+
+.dropzoneHint {
+  font-size: 0.75rem;
+  color: $color-neutral-500;
+}
+
+// Controls
+.controlsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.controlField {
+  flex: 1;
+}
+
+.controlLabel {
+  margin-bottom: 0.375rem;
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.numberInput {
+  width: 100%;
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: $color-neutral-100;
+  outline: none;
+  transition: border-color $duration-fast ease;
+
+  &:focus {
+    border-color: rgba($color-primary, 0.6);
+  }
+}
+
+.buttonRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.primaryButton {
+  flex: 1;
+  border-radius: $radius-xl;
+  padding: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: rgba($color-primary, 0.2);
+  color: $color-primary;
+  transition: background-color $duration-fast ease;
+
+  &:hover:not(:disabled) {
+    background-color: rgba($color-primary, 0.3);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: $color-white-5;
+    color: $color-neutral-500;
+  }
+}
+
+.secondaryButton {
+  flex: 1;
+  border-radius: $radius-xl;
+  border: 1px solid $color-white-10;
+  padding: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $color-neutral-400;
+  transition: background-color $duration-fast ease, opacity $duration-fast ease;
+
+  &:hover:not(:disabled) {
+    background-color: $color-white-5;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+// Drift results
+.driftResultHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.driftBadge {
+  border-radius: $radius-lg;
+  border: 1px solid;
+  padding: 0.25rem 0.75rem;
+}
+
+.driftBadgeHigh {
+  background-color: rgba($color-red-500, 0.1);
+  border-color: rgba($color-red-500, 0.2);
+}
+
+.driftBadgeMedium {
+  background-color: rgba($color-yellow-500, 0.1);
+  border-color: rgba($color-yellow-500, 0.2);
+}
+
+.driftBadgeLow {
+  background-color: rgba($color-green-500, 0.1);
+  border-color: rgba($color-green-500, 0.2);
+}
+
+.driftBadgeDefault {
+  background-color: $color-white-5;
+  border-color: $color-white-10;
+}
+
+.driftBadgeText {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.driftTextNeutral {
+  color: $color-neutral-400;
+}
+
+.driftTextHigh {
+  color: $color-red-400;
+}
+
+.driftTextMedium {
+  color: $color-yellow-400;
+}
+
+.driftTextLow {
+  color: $color-green-400;
+}
+
+// Summary grid for drift stats (4 columns on sm)
+.driftSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.driftSummaryCard {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background-color: $color-white-5;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.driftSummaryLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.driftSummaryValue {
+  margin-top: 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-neutral-200;
+}
+
+.driftSummaryValueRed {
+  margin-top: 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-red-400;
+}
+
+.driftSummaryValueGreen {
+  margin-top: 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-green-400;
+}
+
+// Interpretation section
+.interpretationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.interpretationSectionTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $color-neutral-400;
+}
+
+.interpretationCard {
+  border-radius: $radius-lg;
+  border: 1px solid $color-white-10;
+  background-color: $color-white-5;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.interpretationRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.interpretationLabel {
+  color: $color-neutral-400;
+}
+
+.interpretationValue {
+  color: $color-neutral-200;
+}
+
+.interpretationValueRed {
+  color: $color-red-400;
+}
+
+.interpretationValueGreen {
+  color: $color-green-400;
+}
+
+.interpretationValueMedium {
+  color: $color-yellow-400;
+  font-weight: 500;
+}
+
+.interpretationValueHigh {
+  color: $color-red-400;
+  font-weight: 500;
+}
+
+.interpretationValueLow {
+  color: $color-green-400;
+  font-weight: 500;
+}
+
+.recommendation {
+  margin-top: 0.5rem;
+  border-top: 1px solid $color-white-10;
+  padding-top: 0.5rem;
+}
+
+.recommendationLabel {
+  font-size: 0.75rem;
+  color: $color-neutral-400;
+}
+
+.recommendationText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Explanation box
+.explanationBox {
+  border-radius: $radius-lg;
+  border: 1px solid rgba($color-primary, 0.2);
+  background-color: rgba($color-primary, 0.05);
+  padding: 1rem;
+}
+
+.explanationText {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
+
+// Generated data
+.generatedDataInfo {
+  font-size: 0.875rem;
+  color: $color-neutral-400;
+}
