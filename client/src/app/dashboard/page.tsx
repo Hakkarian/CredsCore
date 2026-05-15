@@ -44,15 +44,23 @@ export default function DashboardPage() {
         setPrediction(result);
       },
     });
-    fraudSimilarMutation.mutate(data, {
+    fraudSimilarMutation.mutate({ data, k: 10 }, {
       onSuccess: (result) => {
         // Map fraud similar results to EnrichedSimilarApplicant format
-        const mapped = result.similar_applicants.map((item: any) => ({
-          index: item.index,
-          similarityScore: 1 - item.distance, // Convert distance to similarity
-          defaultLabel: item.default,
-          trendData: [{ value: 0.5 }, { value: 1 - item.distance }],
-        }));
+        // Use exponential decay normalization for L2 distances which can be >1
+        const mapped = result.similar_applicants.map((item: any) => {
+          const normalized = item.distance <= 1
+            ? Math.max(0, 1 - item.distance)
+            : Math.max(0, Math.exp(-item.distance * 0.05));
+          return {
+            index: item.index,
+            distance: item.distance,
+            similarityScore: normalized,
+            riskLevel: normalized >= 0.5 ? "high" as const : normalized >= 0.25 ? "medium" as const : "low" as const,
+            defaultLabel: item.default,
+            trendData: [{ value: 0.5 }, { value: normalized }],
+          };
+        });
         setSimilarApplicants(mapped);
       },
     });
@@ -80,30 +88,39 @@ export default function DashboardPage() {
                 />
               </section>
 
-              {prediction && (
-                <section className={styles.sectionAnimated}>
-                  <PredictionResults result={prediction} />
-                </section>
-              )}
+              {!prediction && similarApplicants.length === 0 ? (
+                <div className={styles.welcome}>
+                  <p>No defaults detected — yet.</p>
+                  <p>Be the first to train the model.</p>
+                </div>
+              ) : (
+                <>
+                  {prediction && (
+                    <section className={styles.sectionAnimated}>
+                      <PredictionResults result={prediction} />
+                    </section>
+                  )}
 
-              {similarApplicants.length > 0 && (
-                <section className={styles.sectionAnimatedGrid2}>
-                  <SimilarCarousel data={similarApplicants} />
-                  <SimilarTable data={similarApplicants} />
-                </section>
-              )}
+                  {similarApplicants.length > 0 && (
+                    <section className={styles.sectionAnimatedGrid2}>
+                      <SimilarCarousel data={similarApplicants} />
+                      <SimilarTable data={similarApplicants} />
+                    </section>
+                  )}
 
-              {formData && (
-                <section className={styles.sectionAnimatedGrid2}>
-                  <InsightsPanel applicantId="default" features={formData} />
-                  <AgenticPanel applicantId="default" features={formData} />
-                </section>
-              )}
+                  {formData && (
+                    <section className={styles.sectionAnimatedGrid2}>
+                      <InsightsPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
+                      <AgenticPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
+                    </section>
+                  )}
 
-              {formData && (
-                <section className={styles.sectionAnimated}>
-                  <SocialCapitalPanel data={null} networkData={null} />
-                </section>
+                  {formData && (
+                    <section className={styles.sectionAnimated}>
+                      <SocialCapitalPanel applicantId="default" features={formData} />
+                    </section>
+                  )}
+                </>
               )}
             </>
           )}
@@ -135,13 +152,13 @@ export default function DashboardPage() {
 
           {activeTab === "insights" && formData && (
             <section className={styles.sectionAnimated}>
-              <InsightsPanel applicantId="default" features={formData} />
+              <InsightsPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
             </section>
           )}
 
           {activeTab === "agentic" && formData && (
             <section className={styles.sectionAnimated}>
-              <AgenticPanel applicantId="default" features={formData} />
+              <AgenticPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
             </section>
           )}
         </div>

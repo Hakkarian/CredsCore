@@ -55,26 +55,18 @@ app.add_middleware(
 
 
 def _extract_applicant_features(applicant: ClientData) -> Dict[str, Any]:
-    """Extract ML-compatible features from ClientData for downstream services.
-
-    ClientData contains identity fields (name, email, etc.) and a credit_score.
-    For fraud/scoring we need the 10 ML features. We derive what we can and
-    fall back to reasonable defaults for features not available in ClientData.
-    """
-    # credit_score is 0-1000; convert to a utilization-like 0-1 value
-    utilization_proxy = applicant.credit_score / 1000.0
-
+    """Extract ML-compatible features from ClientData for downstream services."""
     return {
-        "RevolvingUtilizationOfUnsecuredLines": round(1.0 - utilization_proxy, 3),
-        "age": 30,
-        "NumberOfTime30_59DaysPastDueNotWorse": 0,
-        "DebtRatio": round(1.0 - utilization_proxy, 3),
-        "MonthlyIncome": 5000.0,
-        "NumberOfOpenCreditLinesAndLoans": 5,
-        "NumberOfTimes90DaysLate": 0,
-        "NumberRealEstateLoansOrLines": 0,
-        "NumberOfTime60_89DaysPastDueNotWorse": 0,
-        "NumberOfDependents": 0,
+        "RevolvingUtilizationOfUnsecuredLines": applicant.RevolvingUtilizationOfUnsecuredLines,
+        "age": applicant.age,
+        "NumberOfTime30_59DaysPastDueNotWorse": applicant.NumberOfTime30_59DaysPastDueNotWorse,
+        "DebtRatio": applicant.DebtRatio,
+        "MonthlyIncome": applicant.MonthlyIncome,
+        "NumberOfOpenCreditLinesAndLoans": applicant.NumberOfOpenCreditLinesAndLoans,
+        "NumberOfTimes90DaysLate": applicant.NumberOfTimes90DaysLate,
+        "NumberRealEstateLoansOrLines": applicant.NumberRealEstateLoansOrLines,
+        "NumberOfTime60_89DaysPastDueNotWorse": applicant.NumberOfTime60_89DaysPastDueNotWorse,
+        "NumberOfDependents": applicant.NumberOfDependents or 0,
     }
 
 

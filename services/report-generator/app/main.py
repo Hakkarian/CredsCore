@@ -8,12 +8,29 @@ import os
 import uuid
 from datetime import datetime
 
-from credscore_shared import (
-    HealthCheckResponse,
-    ReportRequest,
-    ReportResponse,
-    ReportStatusResponse,
-)
+from credscore_shared import HealthCheckResponse
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
+class ReportRequest(BaseModel):
+    applicant_name: str
+    score: float
+    risk_level: str
+    decision: str
+
+
+class ReportResponse(BaseModel):
+    report_id: str
+    status: str
+
+
+class ReportStatusResponse(BaseModel):
+    report_id: str
+    status: str
+    content: Optional[str] = None
+    created_at: Optional[str] = None
+    completed_at: Optional[str] = None
 
 app = FastAPI(title="Report Generator Service", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])

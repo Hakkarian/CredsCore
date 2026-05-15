@@ -31,3 +31,15 @@ class ServiceClient:
     async def close(self):
         if self._client and not self._client.is_closed:
             await self._client.aclose()
+
+    def __del__(self):
+        if self._client and not self._client.is_closed:
+            import asyncio
+            try:
+                loop = asyncio.get_running_loop()
+                if loop.is_running():
+                    loop.create_task(self._client.aclose())
+                else:
+                    asyncio.run(self._client.aclose())
+            except RuntimeError:
+                pass

@@ -18,11 +18,17 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from app.gan_engine import (
-    get_or_create_engine,
-    CTGANEngine,
-    create_sample_training_data,
-)
+try:
+    from app.gan_engine import (
+        get_or_create_engine,
+        CTGANEngine,
+        create_sample_training_data,
+    )
+except ImportError:
+    # torch/ctgan not available — use simple engine only
+    get_or_create_engine = None
+    CTGANEngine = None
+    create_sample_training_data = None
 
 from app.simple_engine import get_simple_engine
 from app.models import (
@@ -42,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 # Global engine reference
-current_engine: Optional[CTGANEngine] = None
+current_engine = None
 
 
 @asynccontextmanager
@@ -52,16 +58,19 @@ async def lifespan(app: FastAPI):
     logger.info("Synthetic Data Service starting up...")
 
     # Initialize model in background thread to avoid blocking startup
-    import threading
-    def init_model():
-        global current_engine
-        try:
-            current_engine = get_or_create_engine()
-            logger.info("Model initialized successfully")
-        except Exception as e:
-            logger.warning(f"Model initialization failed: {e}")
+    if get_or_create_engine is not None:
+        import threading
+        def init_model():
+            global current_engine
+            try:
+                current_engine = get_or_create_engine()
+                logger.info("Model initialized successfully")
+            except Exception as e:
+                logger.warning(f"Model initialization failed: {e}")
 
-    threading.Thread(target=init_model, daemon=True).start()
+        threading.Thread(target=init_model, daemon=True).start()
+    else:
+        logger.info("CTGAN unavailable — using simple statistical engine")
 
     yield
 
@@ -184,12 +193,10 @@ def dataframe_to_records(df: pd.DataFrame, generation_id: str) -> list:
 async def health_check():
     """Health check endpoint."""
     return {
-        "status": "healthy"
-        if current_engine and current_engine.is_trained
-        else "initializing",
+        "status": "healthy",
         "timestamp": datetime.now(timezone.utc),
         "service": "synthetic-data",
-        "model_ready": current_engine is not None and current_engine.is_trained,
+        "model_ready": current_engine is not None and getattr(current_engine, 'is_trained', False),
     }
 
 
