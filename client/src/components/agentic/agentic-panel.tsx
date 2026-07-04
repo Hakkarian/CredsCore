@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Bot, FileText } from "lucide-react";
 import {
   ApplicantData,
   AgenticAnalysisResult,
@@ -87,6 +88,14 @@ export function AgenticPanel({ applicantId, features }: AgenticPanelProps) {
     }
     if ("composite_score" in agent && typeof agent.composite_score === "number") return agent.composite_score;
     if ("confidence" in agent && typeof agent.confidence === "number") return agent.confidence;
+    // Governance Risk Agent exposes no single risk_score; derive a 0-1 risk
+    // from fraud_risk (max 0.3) and reputational_risk (max 0.2), matching the
+    // normalized display in the Governance Metrics sub-section below.
+    if ("fraud_risk" in agent && "reputational_risk" in agent) {
+      const fraud = Math.min(1, (agent.fraud_risk ?? 0) / 0.3);
+      const reputational = Math.min(1, (agent.reputational_risk ?? 0) / 0.2);
+      return Math.min(1, Math.max(0, (fraud + reputational) / 2));
+    }
     return 0;
   }
 
@@ -113,7 +122,7 @@ export function AgenticPanel({ applicantId, features }: AgenticPanelProps) {
     return (
       <div className={styles.emptyState}>
         <div className={styles.emptyInner}>
-          <span className={styles.emptyIcon}>&#x1F916;</span>
+          <Bot className={styles.emptyIcon} size={24} />
           <p className={styles.emptyText}>Enter applicant data to run agentic analysis</p>
         </div>
       </div>
@@ -142,7 +151,7 @@ export function AgenticPanel({ applicantId, features }: AgenticPanelProps) {
       <div className={styles.header}>
         <div>
           <h2 className={styles.headerTitle}>
-            <span className={styles.headerIcon}>&#x1F916;</span>
+            <Bot className={styles.headerIcon} size={22} />
             Multi-Agent Analysis
           </h2>
           <p className={styles.headerSubtitle}>{agentEntries.length} agents analyzed</p>
@@ -363,7 +372,7 @@ export function AgenticPanel({ applicantId, features }: AgenticPanelProps) {
         <ShimmerBorder borderRadius="1rem">
           <div className={styles.reportContent}>
             <h3 className={styles.reportTitle}>
-              <span className={styles.reportTitleIcon}>&#x1F4C4;</span>
+              <FileText className={styles.reportTitleIcon} size={20} />
               Agentic Report
             </h3>
 
@@ -415,12 +424,13 @@ export function AgenticPanel({ applicantId, features }: AgenticPanelProps) {
                 <h4 className={styles.sectionLabel}>Agent Consensus</h4>
                 <div className={styles.agentConsensusGrid}>
                   {Object.entries(report.agent_consensus).map(([key, value]) => {
-                    // Normalize weighted scores to 0-100% display
-                    const maxMap: Record<string, number> = { bra_score: 0.4, fra_score: 0.6, gra_score: 0.3 };
-                    const max = maxMap[key];
-                    const display = typeof value === "number" && max
-                      ? formatPct(Math.min(1, value / max))
-                      : typeof value === "string" ? value : formatPct(value as number);
+                    // Scores are already 0-1 risk scores (same values as the
+                    // agent grid above). Display them directly — do NOT divide
+                    // by agent weights, which produced inflated, contradictory
+                    // values (e.g. fra 99% next to a 59% grid tile).
+                    const display = typeof value === "number"
+                      ? formatPct(Math.min(1, Math.max(0, value)))
+                      : String(value);
                     return (
                       <div key={key} className={styles.agentConsensusItem}>
                         <p className={styles.agentConsensusItemLabel}>{key.replace(/_/g, " ")}</p>
