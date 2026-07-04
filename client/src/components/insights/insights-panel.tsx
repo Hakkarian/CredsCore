@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { BarChart3, Lightbulb, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { augmentedScoringApi, ApplicantData, InsightsResult } from "@/lib/api";
 import type { CounterfactualInsight } from "@/lib/types";
@@ -46,10 +47,7 @@ export function InsightsPanel({ applicantId, features }: InsightsPanelProps) {
     return (
       <div className={styles.loadingState}>
         <div className={styles.loadingInner}>
-          <svg className={styles.loadingSpinner} viewBox="0 0 24 24">
-            <circle className={styles.spinnerCircle} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className={styles.spinnerPath} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
+          <Loader2 className={styles.loadingSpinner} />
           <span className={styles.loadingText}>Analyzing causal and social factors...</span>
         </div>
       </div>
@@ -76,7 +74,7 @@ export function InsightsPanel({ applicantId, features }: InsightsPanelProps) {
     return (
       <div className={styles.emptyState}>
         <div className={styles.emptyInner}>
-          <span className={styles.emptyIcon}>&#x1F4CA;</span>
+          <span className={styles.emptyIcon}><BarChart3 className={styles.emptyIconSvg} /></span>
           <p className={styles.emptyText}>Enter applicant data to see insights</p>
         </div>
       </div>
@@ -89,7 +87,7 @@ export function InsightsPanel({ applicantId, features }: InsightsPanelProps) {
       <div className={styles.header}>
         <div>
           <h2 className={styles.headerTitle}>
-            <span className={styles.headerIcon}>&#x1F4A1;</span>
+            <span className={styles.headerIcon}><Lightbulb className={styles.headerIconSvg} /></span>
             Analysis Insights
           </h2>
           <p className={styles.headerSubtitle}>Causal and social factor analysis</p>
