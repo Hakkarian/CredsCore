@@ -12,11 +12,101 @@ class CreditPredictor:
         self.feature_names = joblib.load(os.path.join(model_dir, "feature_names.pkl"))
         self.rgcn_factory = None
         self.rgcn_loaded = False
+        # MonthlyIncome training stats: `impute_value` is the floor training
+        # used for zeros/NaN (default $1000); the percentiles feed the temporary
+        # demo monotonicity correction. See _load_income_stats and
+        # _demo_income_correction.
+        self.income_stats = self._load_income_stats(model_dir)
+        self.income_floor = float(
+            self.income_stats.get("impute_value", self.income_stats.get("p01", 1000.0))
+        )
+
+    def _load_income_stats(self, model_dir: str) -> Dict[str, Any]:
+        """Load MonthlyIncome stats from training_stats.pkl.
+
+        Looks in the model dir root and the active MODEL_VERSION subdir. Falls
+        back to default stats if the artifact is missing so imputation and the
+        demo fix are always defined.
+        """
+        candidates = [
+            os.path.join(model_dir, "training_stats.pkl"),
+            os.path.join(model_dir, os.getenv("MODEL_VERSION", "v2"), "training_stats.pkl"),
+        ]
+        for path in candidates:
+            try:
+                stats = joblib.load(path)
+            except Exception:
+                continue
+            income_stats = stats.get("MonthlyIncome", {}) if isinstance(stats, dict) else {}
+            if income_stats:
+                return income_stats
+        return {"impute_value": 1000.0, "p25": 3500.0, "p50": 5437.0, "p75": 8300.0}
+
+    def _demo_income_correction(self, df: pd.DataFrame) -> float:
+        """TEMPORARY demo shim — bounded monotonic correction for the inverted
+        MonthlyIncome -> risk relationship. REMOVE once the model is retrained
+        with monotone_constraints (planned fix #1).
+
+        The trained model learned that LOWER income = LOWER risk (a missing-
+        data confound: zero/very-low income rows default less in training).
+        Without a retrain we apply a bounded, data-derived correction so risk is
+        non-increasing in income: above-median income gets a bounded risk
+        reduction, below-median gets a bounded increase.
+
+        Form (approved): correction = -clip(z, -2, 2) * 0.05  (±0.10 max).
+        Scale: a ROBUST z-score is used — center = median (p50), scale =
+        IQR/1.349 = (p75 - p25)/1.349 — instead of raw mean/std, because the
+        raw std (~$14,462) is dominated by the $3M outlier tail and makes the
+        correction inert for realistic incomes. Both center and scale come from
+        training_stats.pkl, so this stays data-derived (no arbitrary constant).
+
+        Gated by env DEMO_MONOTONIC_FIX=1 so the shim is explicit and trivial
+        to disable. Returns 0.0 when disabled or stats are insufficient.
+        """
+        if os.getenv("DEMO_MONOTONIC_FIX", "0") != "1":
+            return 0.0
+        p25 = self.income_stats.get("p25")
+        p50 = self.income_stats.get("p50")
+        p75 = self.income_stats.get("p75")
+        if p25 is None or p50 is None or p75 is None:
+            return 0.0
+        robust_std = (float(p75) - float(p25)) / 1.349
+        if robust_std <= 0:
+            return 0.0
+        if "MonthlyIncome" in df.columns and len(df) > 0:
+            income = float(df["MonthlyIncome"].iloc[0])
+        else:
+            income = self.income_floor
+        z = (income - float(p50)) / robust_std
+        z = max(-2.0, min(2.0, z))
+        return -z * 0.05
 
     def to_dataframe(self, client_data: Dict[str, Any]) -> pd.DataFrame:
-        data = {fn: client_data.get(fn, 0) for fn in self.feature_names}
+        # Normalize payload keys to match model feature names (hyphen/underscore
+        # equivalence). The stored feature_names use hyphens (e.g.
+        # "NumberOfTime30-59DaysPastDueNotWorse") while the API contract uses
+        # underscores; without normalization those lookups silently default to 0.
+        normalized = {
+            str(k).replace("-", "_"): v for k, v in client_data.items()
+        }
+        data = {}
+        for feature_name in self.feature_names:
+            key = str(feature_name).replace("-", "_")
+            if key not in normalized:
+                raise KeyError(
+                    f"Model feature {feature_name!r} has no value in request payload"
+                )
+            data[feature_name] = normalized[key]
         df = pd.DataFrame([data])
-        return df.reindex(columns=self.feature_names, fill_value=0)
+        df = df.reindex(columns=self.feature_names, fill_value=0)
+        # Inference-time imputation: clamp MonthlyIncome below the training
+        # floor up to the floor. Mirrors training's zero/NaN -> floor imputation
+        # and keeps risk monotonic at the low-income end (no OOD raw zeros).
+        if "MonthlyIncome" in df.columns and self.income_floor > 0:
+            df["MonthlyIncome"] = df["MonthlyIncome"].apply(
+                lambda v: self.income_floor if v < self.income_floor else v
+            )
+        return df
 
     def get_probability(self, df: pd.DataFrame) -> float:
         if hasattr(self.model, "predict_proba"):
@@ -57,6 +147,12 @@ class CreditPredictor:
             rgcn_features = None
 
         final_prob = rgcn_prob if rgcn_prob is not None else prob
+        # TEMPORARY demo shim: enforce income -> risk monotonicity without
+        # retraining. See _demo_income_correction. No-op unless
+        # DEMO_MONOTONIC_FIX=1. Remove after the #1 monotone_constraints retrain.
+        monotonic_correction = self._demo_income_correction(df)
+        if monotonic_correction:
+            final_prob = max(0.0, min(1.0, final_prob + monotonic_correction))
         sv = self.get_shap(self.explainer.shap_values(df))
         vals = sv.flatten()
         idx = np.argsort(np.abs(vals))[::-1][:5]
@@ -75,6 +171,7 @@ class CreditPredictor:
             "base_probability": prob,
             "rgcn_probability": rgcn_prob,
             "rgcn_features": rgcn_features,
+            "monotonic_correction": monotonic_correction,
             "risk_level": "high"
             if final_prob > 0.5
             else "medium"
