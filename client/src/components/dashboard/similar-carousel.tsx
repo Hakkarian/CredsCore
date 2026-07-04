@@ -1,20 +1,21 @@
 "use client";
 
 import { useRef } from "react";
+import { Trophy, Medal, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { EnrichedSimilarApplicant } from "@/lib/types";
 import { MiniSparkline } from "@/components/dashboard/charts";
-import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
-import { cn } from "@/lib/utils";
-import styles from "./similar-carousel.module.scss";
 
 interface SimilarCarouselProps {
   data: EnrichedSimilarApplicant[];
 }
+import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
+import { cn } from "@/lib/utils";
+import styles from "./similar-carousel.module.scss";
 
-function getRankIcon(rank: number): string {
-  if (rank === 1) return "\u{1F947}";
-  if (rank === 2) return "\u{1F948}";
-  if (rank === 3) return "\u{1F949}";
+function getRankIcon(rank: number): React.ReactNode {
+  if (rank === 1) return <Trophy className={styles.rankIconSvg} />;
+  if (rank === 2) return <Medal className={styles.rankIconSvg} />;
+  if (rank === 3) return <Award className={styles.rankIconSvg} />;
   return `#${rank}`;
 }
 
@@ -221,14 +222,14 @@ export function SimilarCarousel({ data }: SimilarCarouselProps) {
           onClick={() => scrollByCard("prev")}
           aria-label="Previous"
         >
-          &#8249;
+          <ChevronLeft className={styles.navButtonIcon} />
         </button>
         <button
           className={cn(styles.navButtonSide, styles.next)}
           onClick={() => scrollByCard("next")}
           aria-label="Next"
         >
-          &#8250;
+          <ChevronRight className={styles.navButtonIcon} />
         </button>
       </div>
     </div>

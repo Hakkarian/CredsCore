@@ -4,8 +4,6 @@ import { useState } from "react";
 import { DashboardHeader, PageHeader, TabBar, DASHBOARD_TABS, type DashboardTabId } from "@/components/dashboard/dashboard-header";
 import { InputForm } from "@/components/dashboard/input-form";
 import { PredictionResults } from "@/components/dashboard/results";
-import { GroupsPanel } from "@/components/dashboard/groups-panel";
-import { DriftPanel } from "@/components/dashboard/drift-panel";
 import { SimilarTable } from "@/components/dashboard/similar-table";
 import { SimilarCarousel } from "@/components/dashboard/similar-carousel";
 import { InsightsPanel } from "@/components/insights/insights-panel";
@@ -56,7 +54,11 @@ export default function DashboardPage() {
             index: item.index,
             distance: item.distance,
             similarityScore: normalized,
-            riskLevel: normalized >= 0.5 ? "high" as const : normalized >= 0.25 ? "medium" as const : "low" as const,
+            // Risk level reflects the neighbor's ACTUAL outcome (did they
+            // default), not how similar they are — similarity is already
+            // shown as "Match %". Deriving risk from distance produced
+            // contradictory "High risk + Good status" cards.
+            riskLevel: item.default ? "high" as const : "low" as const,
             defaultLabel: item.default,
             trendData: [{ value: 0.5 }, { value: normalized }],
           };
@@ -88,38 +90,20 @@ export default function DashboardPage() {
                 />
               </section>
 
-              {!prediction && similarApplicants.length === 0 ? (
+              {!prediction ? (
                 <div className={styles.welcome}>
                   <p>No defaults detected — yet.</p>
                   <p>Be the first to train the model.</p>
                 </div>
               ) : (
                 <>
-                  {prediction && (
-                    <section className={styles.sectionAnimated}>
-                      <PredictionResults result={prediction} />
-                    </section>
-                  )}
+                  <section className={styles.sectionAnimated}>
+                    <PredictionResults result={prediction} />
+                  </section>
 
-                  {similarApplicants.length > 0 && (
-                    <section className={styles.sectionAnimatedGrid2}>
-                      <SimilarCarousel data={similarApplicants} />
-                      <SimilarTable data={similarApplicants} />
-                    </section>
-                  )}
-
-                  {formData && (
-                    <section className={styles.sectionAnimatedGrid2}>
-                      <InsightsPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
-                      <AgenticPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
-                    </section>
-                  )}
-
-                  {formData && (
-                    <section className={styles.sectionAnimated}>
-                      <SocialCapitalPanel applicantId="default" features={formData} />
-                    </section>
-                  )}
+                  <section className={styles.sectionAnimated}>
+                    <SocialCapitalPanel applicantId="default" features={formData} />
+                  </section>
                 </>
               )}
             </>
@@ -138,27 +122,15 @@ export default function DashboardPage() {
             </section>
           )}
 
-          {activeTab === "groups" && (
-            <section className={styles.section}>
-              <GroupsPanel />
-            </section>
-          )}
-
-          {activeTab === "drift" && (
-            <section className={styles.section}>
-              <DriftPanel />
-            </section>
-          )}
-
           {activeTab === "insights" && formData && (
             <section className={styles.sectionAnimated}>
-              <InsightsPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
+              <InsightsPanel applicantId="default" features={formData} />
             </section>
           )}
 
           {activeTab === "agentic" && formData && (
             <section className={styles.sectionAnimated}>
-              <AgenticPanel applicantId="default" features={formData} mlProbability={prediction?.default_probability} />
+              <AgenticPanel applicantId="default" features={formData} />
             </section>
           )}
         </div>
