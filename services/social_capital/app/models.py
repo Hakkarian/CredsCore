@@ -51,6 +51,7 @@ class SocialCapitalRequest(BaseModel):
     )
     depth: int = Field(default=2, ge=1, le=5, description="Network exploration depth")
     include_network: bool = Field(default=True, description="Include full network data")
+    features: Optional[Dict[str, Any]] = Field(default=None, description="Applicant features used to derive scores")
 
 
 class RiskIndicators(BaseModel):
@@ -129,6 +130,7 @@ class VisualizationDataRequest(BaseModel):
     depth: int = Field(default=2, ge=1, le=4, description="Network depth")
     max_nodes: int = Field(default=100, ge=10, le=500, description="Maximum nodes to return")
     include_metrics: bool = Field(default=True, description="Include calculated metrics")
+    features: Optional[Dict[str, Any]] = Field(default=None, description="Applicant features used to derive a deterministic network seed")
 
 
 class VisualizationDataResponse(BaseModel):

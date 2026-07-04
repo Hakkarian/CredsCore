@@ -1,6 +1,8 @@
 """Social Capital Service - API for social network analysis and scoring."""
 import sys
 import os
+import hashlib
+import json
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
@@ -43,6 +45,23 @@ def _features_to_seed(features: Optional[Dict] = None) -> int:
         if isinstance(val, (int, float)):
             seed ^= int(val * 1000) & 0xFFFFFFFF
     return seed or 42
+
+
+def _features_hash(features: Optional[Dict] = None) -> str:
+    """Stable short hash of the features dict for cache keying.
+
+    The /calculate cache must distinguish requests with the same entity_id but
+    different features, otherwise the first result for an entity is frozen and
+    returned for every subsequent feature change (values stop reacting to the
+    applicant's inputs). Returns "none" when no features are provided.
+    """
+    if not features:
+        return "none"
+    try:
+        payload = json.dumps(features, sort_keys=True, default=str)
+        return hashlib.md5(payload.encode("utf-8")).hexdigest()[:12]
+    except Exception:
+        return "none"
 
 
 def _calc_scores_from_features(features: Optional[Dict]) -> Dict[str, Any]:
@@ -122,7 +141,7 @@ async def health_check() -> HealthCheckResponse:
 @app.post("/calculate")
 async def calculate_social_capital(request: SocialCapitalRequest) -> SocialCapitalResponse:
     """Calculate social capital metrics for an entity."""
-    cache_key = f"{request.entity_id}:{request.depth}"
+    cache_key = f"{request.entity_id}:{request.depth}:{_features_hash(request.features)}"
     if cache_key in _cache:
         return _cache[cache_key]
 
@@ -248,21 +267,65 @@ async def calculate_risk_indicators(request: RiskCalculationRequest) -> RiskIndi
     )
 
 
+def _network_structure_from_features(features: Optional[Dict], max_nodes: int):
+    """Derive network size, edge count, and community count from applicant
+    features so the visualization reacts to the applicant's profile.
+
+    A larger/older financial footprint (more open credit lines + real-estate
+    loans, higher income, greater age) yields a larger network; a healthier
+    balance sheet (lower utilization and debt ratio) yields denser connections;
+    credit-line diversity and income tier drive the community count. Returns
+    (num_nodes, target_edges, communities). Falls back to a default mid-sized
+    network when no features are provided.
+    """
+    if not features:
+        default_nodes = min(50, max_nodes)
+        return (default_nodes, default_nodes * 2, 2)
+
+    def _num(key: str, default: float) -> float:
+        try:
+            return float(features.get(key, default) or 0)
+        except (TypeError, ValueError):
+            return default
+
+    open_loans = _num("NumberOfOpenCreditLinesAndLoans", 5)
+    real_estate = _num("NumberRealEstateLoansOrLines", 0)
+    income = _num("MonthlyIncome", 5000)
+    age = _num("age", 30)
+    util = _num("RevolvingUtilizationOfUnsecuredLines", 0.5)
+    debt_ratio = _num("DebtRatio", 0.3)
+
+    # Network size grows with the applicant's financial footprint.
+    raw_nodes = 15 + open_loans * 2 + real_estate * 3 + income / 4000 + age / 8
+    num_nodes = max(12, min(max_nodes, int(raw_nodes)))
+
+    # Edge density: healthier balance sheet -> more connections.
+    density = 1.4 + (1 - min(1.0, util)) * 0.8 + (1 - min(1.0, debt_ratio)) * 0.8
+    target_edges = int(num_nodes * density)
+
+    # Communities scale with credit-line diversity and income tier.
+    communities = max(1, min(8, int(open_loans / 3) + int(income / 8000) + 1))
+
+    return (num_nodes, target_edges, communities)
+
+
 @app.post("/visualization-data")
 async def get_visualization_data(request: VisualizationDataRequest) -> VisualizationDataResponse:
     """Return network data formatted for visualization."""
     from app.models import NetworkNode, NetworkEdge
 
-    # Use seed from features for deterministic results
+    # Seed from features so node positions/attributes are deterministic per
+    # feature set; structure (node/edge/community counts) is derived from
+    # features via _network_structure_from_features so the graph reacts to the
+    # applicant's profile, not a fixed 50-node constant.
     seed = _features_to_seed(request.features)
     rng = __import__("random").Random(seed)
 
+    num_nodes, target_edges, communities = _network_structure_from_features(
+        request.features, request.max_nodes
+    )
+
     nodes = []
-    edges = []
-    num_nodes = min(50, request.max_nodes)
-
-    center_id = request.entity_id
-
     for i in range(num_nodes):
         nid = f"node_{i}"
         nodes.append(NetworkNode(
@@ -277,7 +340,8 @@ async def get_visualization_data(request: VisualizationDataRequest) -> Visualiza
             y=round(rng.uniform(-200, 200), 2)
         ))
 
-    for i in range(num_nodes * 2):
+    edges = []
+    for _ in range(target_edges):
         src = rng.randint(0, num_nodes - 1)
         tgt = rng.randint(0, num_nodes - 1)
         if src != tgt:
@@ -295,7 +359,7 @@ async def get_visualization_data(request: VisualizationDataRequest) -> Visualiza
         entity_id=request.entity_id,
         total_nodes=len(nodes),
         total_edges=len(edges),
-        communities=rng.randint(1, 5)
+        communities=communities,
     )
 
     return VisualizationDataResponse(
