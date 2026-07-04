@@ -34,8 +34,16 @@
 }
 
 .docsCardIcon {
-  font-size: 1.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 0.75rem;
+  color: #f3ca40;
+}
+
+.docsCardIconSvg {
+  width: 1.875rem;
+  height: 1.875rem;
 }
 
 .docsCardTitle {

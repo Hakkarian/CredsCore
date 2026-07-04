@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { ClipboardList, Rocket, Radio, Plug, Lightbulb, Brain } from "lucide-react";
 import { DocsHeader, DocsSidebar, OverviewContent, QuickStartContent, ApiReferenceContent, EndpointsContent, ExamplesContent, ModelsContent } from "@/components/docs/docs-content";
 import styles from "./page.module.scss";
 
 const SECTIONS = [
-  { id: "overview", title: "Overview", icon: "📋" },
-  { id: "quickstart", title: "Quick Start", icon: "🚀" },
-  { id: "api", title: "API Reference", icon: "📡" },
-  { id: "endpoints", title: "Endpoints", icon: "🔌" },
-  { id: "examples", title: "Examples", icon: "💡" },
-  { id: "models", title: "Models", icon: "🧠" },
+  { id: "overview", title: "Overview", icon: ClipboardList },
+  { id: "quickstart", title: "Quick Start", icon: Rocket },
+  { id: "api", title: "API Reference", icon: Radio },
+  { id: "endpoints", title: "Endpoints", icon: Plug },
+  { id: "examples", title: "Examples", icon: Lightbulb },
+  { id: "models", title: "Models", icon: Brain },
 ];
 
 export default function DocsPage() {

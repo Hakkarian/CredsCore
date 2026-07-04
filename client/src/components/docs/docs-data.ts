@@ -1,3 +1,5 @@
+import { TreeDeciduous, Search, Database, Target } from "lucide-react";
+
 export const CODE_EXAMPLE = `// Example: Make a prediction
 const response = await fetch('http://localhost:8000/predict', {
   method: 'POST',
@@ -41,10 +43,10 @@ export const ENDPOINTS = [
 ];
 
 export const MODELS = [
-  { icon: "🌳", title: "LightGBM", desc: "Gradient boosting framework for high-accuracy predictions", details: ["Fast training", "Low memory usage", "High accuracy"] },
-  { icon: "🔍", title: "SHAP", desc: "Explainable AI for feature importance", details: ["Feature attribution", "Model-agnostic", "Visual explanations"] },
-  { icon: "📊", title: "FAISS", desc: "Vector similarity search for finding similar applicants", details: ["Fast nearest neighbor", "Scalable", "Memory efficient"] },
-  { icon: "🎯", title: "StandardScaler", desc: "Feature normalization for consistent predictions", details: ["Zero mean", "Unit variance", "Prevents bias"] },
+  { icon: TreeDeciduous, title: "LightGBM", desc: "Gradient boosting framework for high-accuracy predictions", details: ["Fast training", "Low memory usage", "High accuracy"] },
+  { icon: Search, title: "SHAP", desc: "Explainable AI for feature importance", details: ["Feature attribution", "Model-agnostic", "Visual explanations"] },
+  { icon: Database, title: "FAISS", desc: "Vector similarity search for finding similar applicants", details: ["Fast nearest neighbor", "Scalable", "Memory efficient"] },
+  { icon: Target, title: "StandardScaler", desc: "Feature normalization for consistent predictions", details: ["Zero mean", "Unit variance", "Prevents bias"] },
 ];
 
 export const QUICK_START_STEPS = [
