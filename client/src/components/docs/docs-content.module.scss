@@ -124,6 +124,17 @@
   }
 }
 
+.sidebarItemIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarItemIconSvg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
 // =====================================================================
 // Content: shared
 // =====================================================================
@@ -173,7 +184,15 @@
 }
 
 .overviewStatIcon {
-  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-primary;
+}
+
+.overviewStatIconSvg {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .overviewStatTitle {
@@ -476,8 +495,16 @@
 }
 
 .modelIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 0.5rem;
-  font-size: 1.875rem;
+  color: $color-primary;
+}
+
+.modelIconSvg {
+  width: 1.875rem;
+  height: 1.875rem;
 }
 
 .modelTitle {

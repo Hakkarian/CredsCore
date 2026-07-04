@@ -1,10 +1,11 @@
 import cn from "classnames";
+import { Target, Zap, Search } from "lucide-react";
 import styles from "./docs-overview.module.scss";
 
 const STATS = [
-  { icon: "🎯", title: "99.2% Accuracy", desc: "High-precision predictions" },
-  { icon: "⚡", title: "< 100ms Response", desc: "Real-time inference" },
-  { icon: "🔍", title: "Explainable AI", desc: "SHAP-based explanations" },
+  { icon: Target, title: "99.2% Accuracy", desc: "High-precision predictions" },
+  { icon: Zap, title: "< 100ms Response", desc: "Real-time inference" },
+  { icon: Search, title: "Explainable AI", desc: "SHAP-based explanations" },
 ];
 
 const BACKEND_ITEMS = [
@@ -25,13 +26,16 @@ export function OverviewContent() {
       <h1 className={styles.docsTitle}>CredsCore Documentation</h1>
       <p className={styles.docsSubtitle}>CredsCore is an AI-powered credit risk assessment platform that combines LightGBM, SHAP explanations, and FAISS vector search to provide accurate, explainable, and fast credit decisions.</p>
       <div className={styles.docsCardGrid}>
-        {STATS.map((item, i) => (
-          <div key={i} className={styles.docsCard}>
-            <div className={styles.docsCardIcon}>{item.icon}</div>
-            <h3 className={styles.docsCardTitle}>{item.title}</h3>
-            <p className={styles.docsCardDesc}>{item.desc}</p>
-          </div>
-        ))}
+        {STATS.map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <div key={i} className={styles.docsCard}>
+              <div className={styles.docsCardIcon}><Icon className={styles.docsCardIconSvg} /></div>
+              <h3 className={styles.docsCardTitle}>{item.title}</h3>
+              <p className={styles.docsCardDesc}>{item.desc}</p>
+            </div>
+          );
+        })}
       </div>
       <div className={styles.docsCard}>
         <h2 className={styles.docsHeading}>Architecture</h2>

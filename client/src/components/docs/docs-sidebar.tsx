@@ -4,7 +4,7 @@ import cn from "classnames";
 import styles from "./docs-sidebar.module.scss";
 
 interface DocsSidebarProps {
-  sections: { id: string; title: string; icon: string }[];
+  sections: { id: string; title: string; icon: React.ComponentType<{ className?: string }> }[];
   activeSection: string;
   onSectionChange: (id: string) => void;
 }
@@ -19,7 +19,7 @@ export function DocsSidebar({ sections, activeSection, onSectionChange }: DocsSi
             onClick={() => onSectionChange(section.id)}
             className={cn(styles.docsSidebarButton, activeSection === section.id && styles.active)}
           >
-            <span className={styles.docsSidebarIcon}>{section.icon}</span>
+            <span className={styles.docsSidebarIcon}><section.icon className={styles.docsSidebarIconSvg} /></span>
             <span>{section.title}</span>
           </button>
         ))}

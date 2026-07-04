@@ -2,6 +2,16 @@
 
 import { cn } from "@/lib/utils";
 import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
+import {
+  TreeDeciduous,
+  Search,
+  Database,
+  Brain,
+  Microscope,
+  Globe,
+  Target,
+  Zap,
+} from "lucide-react";
 import styles from "./docs-content.module.scss";
 
 const CODE_EXAMPLE = `// Example: Make a credit risk prediction via API Gateway
@@ -62,12 +72,12 @@ const ENDPOINTS = [
 ];
 
 const MODELS = [
-  { icon: "\u{1F333}", title: "LightGBM", desc: "Gradient boosting framework for high-accuracy credit predictions", details: ["Fast training", "Low memory usage", "High accuracy", "Feature importance via SHAP"] },
-  { icon: "\u{1F50D}", title: "SHAP", desc: "Explainable AI for feature attribution and denial explanations", details: ["Feature attribution", "Model-agnostic", "Visual explanations", "Regulatory compliance"] },
-  { icon: "\u{1F4CA}", title: "FAISS", desc: "Vector similarity search for finding similar applicants and fraud patterns", details: ["Fast nearest neighbor", "Scalable to millions", "Memory efficient", "Used by both Credit & Fraud services"] },
-  { icon: "\u{1F9E0}", title: "SNN", desc: "Spiking Neural Network for fraud ring detection", details: ["Graph-based detection", "Unsupervised learning", "Ring pattern recognition", "Adaptive thresholds"] },
-  { icon: "\u{1F52C}", title: "Causal Inference", desc: "What-if analysis and counterfactual estimation", details: ["Propensity scoring", "Treatment effect estimation", "Counterfactual scenarios", "Uplift modeling"] },
-  { icon: "\u{1F310}", title: "Social Capital", desc: "Network analysis for creditworthiness assessment", details: ["Centrality metrics", "Community detection", "Anomaly detection", "30% weight in augmented scoring"] },
+  { icon: TreeDeciduous, title: "LightGBM", desc: "Gradient boosting framework for high-accuracy credit predictions", details: ["Fast training", "Low memory usage", "High accuracy", "Feature importance via SHAP"] },
+  { icon: Search, title: "SHAP", desc: "Explainable AI for feature attribution and denial explanations", details: ["Feature attribution", "Model-agnostic", "Visual explanations", "Regulatory compliance"] },
+  { icon: Database, title: "FAISS", desc: "Vector similarity search for finding similar applicants and fraud patterns", details: ["Fast nearest neighbor", "Scalable to millions", "Memory efficient", "Used by both Credit & Fraud services"] },
+  { icon: Brain, title: "SNN", desc: "Spiking Neural Network for fraud ring detection", details: ["Graph-based detection", "Unsupervised learning", "Ring pattern recognition", "Adaptive thresholds"] },
+  { icon: Microscope, title: "Causal Inference", desc: "What-if analysis and counterfactual estimation", details: ["Propensity scoring", "Treatment effect estimation", "Counterfactual scenarios", "Uplift modeling"] },
+  { icon: Globe, title: "Social Capital", desc: "Network analysis for creditworthiness assessment", details: ["Centrality metrics", "Community detection", "Anomaly detection", "30% weight in augmented scoring"] },
 ];
 
 const QUICK_START_STEPS = [
@@ -99,22 +109,25 @@ export function DocsHeader() {
   );
 }
 
-export function DocsSidebar({ sections, activeSection, onSectionChange }: { sections: { id: string; title: string; icon: string }[]; activeSection: string; onSectionChange: (id: string) => void }) {
+export function DocsSidebar({ sections, activeSection, onSectionChange }: { sections: { id: string; title: string; icon: React.ComponentType<{ className?: string }> }[]; activeSection: string; onSectionChange: (id: string) => void }) {
   return (
     <aside className={styles.sidebar}>
       <nav className={styles.sidebarNav}>
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => onSectionChange(section.id)}
-            className={cn(
-              activeSection === section.id ? styles.sidebarItemActive : styles.sidebarItem
-            )}
-          >
-            <span>{section.icon}</span>
-            <span>{section.title}</span>
-          </button>
-        ))}
+        {sections.map((section) => {
+          const Icon = section.icon;
+          return (
+            <button
+              key={section.id}
+              onClick={() => onSectionChange(section.id)}
+              className={cn(
+                activeSection === section.id ? styles.sidebarItemActive : styles.sidebarItem
+              )}
+            >
+              <span className={styles.sidebarItemIcon}><Icon className={styles.sidebarItemIconSvg} /></span>
+              <span>{section.title}</span>
+            </button>
+          );
+        })}
       </nav>
     </aside>
   );
@@ -122,9 +135,9 @@ export function DocsSidebar({ sections, activeSection, onSectionChange }: { sect
 
 export function OverviewContent() {
   const stats = [
-    { icon: "\u{1F3AF}", title: "99.2% Accuracy", desc: "High-precision predictions" },
-    { icon: "\u26A1", title: "< 100ms Response", desc: "Real-time inference" },
-    { icon: "\u{1F50D}", title: "Explainable AI", desc: "SHAP-based explanations" },
+    { icon: Target, title: "99.2% Accuracy", desc: "High-precision predictions" },
+    { icon: Zap, title: "< 100ms Response", desc: "Real-time inference" },
+    { icon: Search, title: "Explainable AI", desc: "SHAP-based explanations" },
   ];
   const backendItems = [
     { dotClass: styles.architectureDotPrimary, text: "LightGBM for predictions" },
@@ -145,15 +158,18 @@ export function OverviewContent() {
       <p className={styles.pageDescription}>CredsCore is an AI-powered credit risk assessment platform that combines LightGBM, SHAP explanations, FAISS vector search, SNN fraud detection, causal inference, and social capital analysis to provide accurate, explainable, and fast credit decisions.</p>
 
       <div className={styles.overviewStatsGrid}>
-        {stats.map((item, i) => (
-          <ShimmerBorder key={i} borderRadius="1rem">
-            <div className={styles.overviewStatCard}>
-              <div className={styles.overviewStatIcon}>{item.icon}</div>
-              <h3 className={styles.overviewStatTitle}>{item.title}</h3>
-              <p className={styles.overviewStatDesc}>{item.desc}</p>
-            </div>
-          </ShimmerBorder>
-        ))}
+        {stats.map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <ShimmerBorder key={i} borderRadius="1rem">
+              <div className={styles.overviewStatCard}>
+                <div className={styles.overviewStatIcon}><Icon className={styles.overviewStatIconSvg} /></div>
+                <h3 className={styles.overviewStatTitle}>{item.title}</h3>
+                <p className={styles.overviewStatDesc}>{item.desc}</p>
+              </div>
+            </ShimmerBorder>
+          );
+        })}
       </div>
 
       <ShimmerBorder borderRadius="1rem">
@@ -332,23 +348,26 @@ export function ModelsContent() {
       <h1 className={styles.pageTitle}>ML Models</h1>
       <p className={styles.pageDescription}>Understanding the models behind CredsCore. The Augmented Scoring service combines ML (60%), Social (30%), and Causal (10%) scores.</p>
       <div className={styles.modelsGrid}>
-        {MODELS.map((model, i) => (
-          <ShimmerBorder key={i} borderRadius="1rem">
-            <div className={styles.modelCard}>
-              <div className={styles.modelIcon}>{model.icon}</div>
-              <h3 className={styles.modelTitle}>{model.title}</h3>
-              <p className={styles.modelDesc}>{model.desc}</p>
-              <ul className={styles.modelDetailsList}>
-                {model.details.map((detail, j) => (
-                  <li key={j} className={styles.modelDetailItem}>
-                    <span className={styles.modelDetailDot} />
-                    <span>{detail}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </ShimmerBorder>
-        ))}
+        {MODELS.map((model, i) => {
+          const Icon = model.icon;
+          return (
+            <ShimmerBorder key={i} borderRadius="1rem">
+              <div className={styles.modelCard}>
+                <div className={styles.modelIcon}><Icon className={styles.modelIconSvg} /></div>
+                <h3 className={styles.modelTitle}>{model.title}</h3>
+                <p className={styles.modelDesc}>{model.desc}</p>
+                <ul className={styles.modelDetailsList}>
+                  {model.details.map((detail, j) => (
+                    <li key={j} className={styles.modelDetailItem}>
+                      <span className={styles.modelDetailDot} />
+                      <span>{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </ShimmerBorder>
+          );
+        })}
       </div>
     </div>
   );
