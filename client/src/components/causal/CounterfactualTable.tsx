@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUp, ArrowDown, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
 import { CounterfactualOutcome } from "@/lib/api";
@@ -20,14 +21,14 @@ function getImpactColorClass(impact: string): string {
   }
 }
 
-function getImpactIcon(impact: string): string {
+function getImpactIcon(impact: string): React.ReactNode {
   switch (impact) {
     case "increase":
-      return "\u25B2";
+      return <ArrowUp className={styles.impactIconSvg} />;
     case "decrease":
-      return "\u25BC";
+      return <ArrowDown className={styles.impactIconSvg} />;
     default:
-      return "\u25CF";
+      return <Circle className={styles.impactIconSvg} />;
   }
 }
 
