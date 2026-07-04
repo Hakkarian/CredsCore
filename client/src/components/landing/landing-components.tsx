@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Target, Zap, BookOpen, Plug, Search, BarChart3, TrendingUp, Users, FileText } from "lucide-react";
 import { FloatingNav } from "@/components/ui/floating-nav";
 import { SpotlightHero } from "@/components/ui/spotlight";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
@@ -16,8 +17,9 @@ import styles from "./landing-components.module.scss";
 const navItems = [
   { name: "Home", link: "/" },
   { name: "Docs", link: "/docs" },
-  { name: "Dashboard", link: "/dashboard" },
 ];
+// Note: FloatingNav always appends a highlighted "Dashboard" CTA at the end,
+// so Dashboard must not be included here (it would render twice).
 
 function Navigation() {
   return <FloatingNav navItems={navItems} />;
@@ -97,10 +99,10 @@ function HeroSection() {
 /* ------------------------------------------------------------------ */
 
 const stats = [
-  { value: "99.2%", label: "Model Accuracy", icon: "\u{1F3AF}", trend: "+0.4%" },
-  { value: "<100ms", label: "Inference Speed", icon: "\u26A1", trend: "-12ms" },
-  { value: "150K+", label: "Training Records", icon: "\u{1F4DA}", trend: "+12K" },
-  { value: "5", label: "API Endpoints", icon: "\u{1F50C}", trend: "Stable" },
+  { value: "99.2%", label: "Model Accuracy", icon: Target, trend: "+0.4%" },
+  { value: "<100ms", label: "Inference Speed", icon: Zap, trend: "-12ms" },
+  { value: "150K+", label: "Training Records", icon: BookOpen, trend: "+12K" },
+  { value: "5", label: "API Endpoints", icon: Plug, trend: "Stable" },
 ];
 
 function StatsSection() {
@@ -119,7 +121,7 @@ function StatsSection() {
               <div className={styles.statCard}>
                 <div className={styles.statHeader}>
                   <span className={styles.statIcon}>
-                    {s.icon}
+                    <s.icon className={styles.statIconSvg} />
                   </span>
                   <span className={styles.statTrend}>
                     {s.trend}
@@ -144,32 +146,32 @@ function StatsSection() {
 
 const features = [
   {
-    icon: "\u{1F3AF}",
+    icon: Target,
     title: "Risk Prediction",
     desc: "LightGBM models deliver state-of-the-art default probability estimation.",
   },
   {
-    icon: "\u{1F50D}",
+    icon: Search,
     title: "Similarity Search",
     desc: "FAISS embeddings find historically similar applicants for context.",
   },
   {
-    icon: "\u{1F4CA}",
+    icon: BarChart3,
     title: "Explainability",
     desc: "SHAP values break down every factor influencing a credit decision.",
   },
   {
-    icon: "\u{1F4C8}",
+    icon: TrendingUp,
     title: "Drift Detection",
     desc: "Monitor data shifts over time and retrain models proactively.",
   },
   {
-    icon: "\u{1F465}",
+    icon: Users,
     title: "Peer Groups",
     desc: "Compare applicants against peer groups to refine scoring accuracy.",
   },
   {
-    icon: "\u{1F4C4}",
+    icon: FileText,
     title: "Thin File",
     desc: "Intelligent estimation for applicants with limited credit history.",
   },
@@ -213,7 +215,7 @@ function FeaturesSection() {
             <ShimmerTiltCard className="h-full">
               <div className={styles.featureCard}>
                 <span className={styles.featureIcon}>
-                  {f.icon}
+                  <f.icon className={styles.featureIconSvg} />
                 </span>
                 <h3 className={styles.featureTitle}>
                   {f.title}
