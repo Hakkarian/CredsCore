@@ -55,10 +55,17 @@ SERVICE_ENDPOINTS = {
     "/synthetic": os.getenv("SYNTHETIC_DATA_URL", "http://localhost:8007"),
     "/synthetic/health": os.getenv("SYNTHETIC_DATA_URL", "http://localhost:8007"),
     "/synthetic/generate": os.getenv("SYNTHETIC_DATA_URL", "http://localhost:8007"),
+    "/synthetic/generate-with-analysis": os.getenv("SYNTHETIC_DATA_URL", "http://localhost:8007"),
     # Augmented Scoring Service (port 8008)
     "/combined": os.getenv("AUGMENTED_SCORING_URL", "http://localhost:8008"),
     "/combined-score": os.getenv("AUGMENTED_SCORING_URL", "http://localhost:8008"),
     "/predict-enhanced": os.getenv("AUGMENTED_SCORING_URL", "http://localhost:8008"),
+    # Causal Inference Service (port 8010)
+    "/counterfactuals": os.getenv("CAUSAL_INFERENCE_URL", "http://localhost:8010"),
+    "/estimate-propensity": os.getenv("CAUSAL_INFERENCE_URL", "http://localhost:8010"),
+    "/estimate-treatment-effect": os.getenv("CAUSAL_INFERENCE_URL", "http://localhost:8010"),
+    "/uplift-modeling": os.getenv("CAUSAL_INFERENCE_URL", "http://localhost:8010"),
+    "/analyze": os.getenv("CAUSAL_INFERENCE_URL", "http://localhost:8010"),
 }
 
 
