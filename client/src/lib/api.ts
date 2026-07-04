@@ -33,6 +33,8 @@ import {
   // Synthetic data types
   SyntheticDataRequest,
   SyntheticDataResponse,
+  SyntheticAnalysisRequest,
+  SyntheticAnalysisResponse,
   QualityMetrics,
   SyntheticRecord,
   // Causal inference types
@@ -98,6 +100,8 @@ export type {
   // Synthetic
   SyntheticDataRequest,
   SyntheticDataResponse,
+  SyntheticAnalysisRequest,
+  SyntheticAnalysisResponse,
   QualityMetrics,
   SyntheticRecord,
   SparklineDataPoint,
@@ -415,6 +419,13 @@ class SyntheticDataClient extends BaseClient {
       body: JSON.stringify(data),
     });
   }
+
+  async generateSyntheticDataWithAnalysis(data: SyntheticAnalysisRequest): Promise<SyntheticAnalysisResponse> {
+    return this.request<SyntheticAnalysisResponse>("/generate-with-analysis", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // ============== Orchestrator Service Client ==============
@@ -612,6 +623,10 @@ class CausalInferenceClient extends BaseClient {
 
 class SocialCapitalClient extends BaseClient {
 
+  constructor(baseUrl: string = "http://localhost:8009") {
+    super(baseUrl);
+  }
+
   async healthCheck(): Promise<{ status: string }> {
     return this.request<{ status: string }>("/health");
   }
@@ -623,11 +638,12 @@ class SocialCapitalClient extends BaseClient {
     });
   }
 
-  async getVisualizationData(entityId: string, depth: number = 2): Promise<NetworkData> {
-    return this.request("/visualization-data", {
+  async getVisualizationData(entityId: string, depth: number = 2, features?: ApplicantData): Promise<NetworkData> {
+    const data = await this.request<{ network: NetworkData }>("/visualization-data", {
       method: "POST",
-      body: JSON.stringify({ entity_id: entityId, entity_type: "individual", depth }),
+      body: JSON.stringify({ entity_id: entityId, entity_type: "individual", depth, features }),
     });
+    return data.network;
   }
 
   async analyzeNetwork(nodes: NetworkNode[], edges: NetworkEdge[]): Promise<NetworkAnalysisResult> {

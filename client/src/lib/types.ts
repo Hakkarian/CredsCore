@@ -293,7 +293,10 @@ export interface QualityMetrics {
 }
 
 export interface SyntheticRecord {
-  [key: string]: number | string | null;
+  record_id?: string;
+  generated_at?: string;
+  features?: { [key: string]: number };
+  [key: string]: number | string | null | { [key: string]: number } | undefined;
 }
 
 export interface SyntheticDataRequest {
@@ -307,6 +310,20 @@ export interface SyntheticDataResponse {
   records: SyntheticRecord[];
   quality_metrics: QualityMetrics;
   generated_at: string;
+}
+
+export interface SyntheticAnalysisRequest extends SyntheticDataRequest {
+  drift_n_clusters?: number;
+  peer_n_clusters?: number;
+  include_drift?: boolean;
+  include_peer_groups?: boolean;
+}
+
+export interface SyntheticAnalysisResponse extends SyntheticDataResponse {
+  drift?: DriftResult | null;
+  peer_groups?: PeerGroupsResult | null;
+  drift_error?: string | null;
+  peer_groups_error?: string | null;
 }
 
 // ============== Causal Inference Types ==============
@@ -393,6 +410,7 @@ export interface SocialCapitalRequest {
   entity_id: string;
   entity_type?: "individual" | "organization" | "business";
   depth?: number;
+  features?: ApplicantData;
 }
 
 export interface SocialCapitalResponse {
