@@ -2,15 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY social_capital/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY shared/credscore_shared /app/shared/credscore_shared
-COPY shared/pyproject.toml /app/shared/pyproject.toml
-RUN pip install --no-cache-dir -e /app/shared
-
 COPY social_capital/app/ ./app/
 
-EXPOSE 8007
+EXPOSE 8009
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8007"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8009"]

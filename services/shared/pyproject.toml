@@ -1,0 +1,11 @@
+[project]
+name = "credscore-shared"
+version = "0.1.0"
+description = "Shared utilities for CredsCore microservices"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.0.0",
+    "httpx>=0.25.0",
+    "redis>=5.0.0",
+]

@@ -52,7 +52,7 @@ async def enrich(applicant: ClientData):
     bureau = await fetch_credit_bureau(applicant)
     banking = await fetch_open_banking(applicant)
     return EnrichmentResponse(
-        applicant_id=applicant.client_id,
+        applicant_id=None,
         credit_bureau_data=bureau,
         open_banking_data=banking,
         status="complete",

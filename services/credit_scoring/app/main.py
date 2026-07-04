@@ -62,6 +62,10 @@ class ClientPredictionResult(BaseModel):
     risk_level: str
     message: str
     top_risk_factors: List[RiskFactor]
+    # TEMPORARY demo shim transparency: bounded income-monotonicity correction
+    # applied to default_probability. 0.0 when DEMO_MONOTONIC_FIX is off. Remove
+    # after the #1 monotone_constraints retrain.
+    monotonic_correction: float = 0.0
 
 
 class SimilarApplicantData(BaseModel):
@@ -370,6 +374,7 @@ async def client_predict(data: ClientApplicantData):
         default_probability=result["default_probability"],
         risk_level=result["risk_level"],
         message=result["message"],
+        monotonic_correction=result.get("monotonic_correction", 0.0),
         top_risk_factors=[
             RiskFactor(
                 feature=rf["feature"], shap_value=rf["shap_value"], impact=rf["impact"]
