@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 export const Tabs = ({
   tabs,
@@ -11,7 +11,7 @@ export const Tabs = ({
   className,
   containerClassName,
 }: {
-  tabs: { title: string; value: string }[];
+  tabs: { title: ReactNode; value: string }[];
   activeTab: string;
   onChange: (value: string) => void;
   className?: string;
