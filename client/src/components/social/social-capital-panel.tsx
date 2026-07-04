@@ -1,29 +1,65 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Globe, BarChart3, Network, TriangleAlert, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SocialCapitalResponse, NetworkData } from "@/lib/api";
-import { ShimmerBorder, ShimmerTiltCard } from "@/components/ui/shimmer-tilt-card";
+import { socialCapitalApi } from "@/lib/api";
+import type { SocialCapitalResponse, NetworkData, ApplicantData } from "@/lib/api";
+import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
 import { Tabs } from "@/components/ui/tabs";
 import styles from "./social-capital-panel.module.scss";
 
 interface SocialCapitalPanelProps {
-  data: SocialCapitalResponse | null;
-  networkData: NetworkData | null;
-  loading?: boolean;
+  applicantId: string;
+  features: ApplicantData | null;
 }
 
-export function SocialCapitalPanel({ data, networkData, loading }: SocialCapitalPanelProps) {
+export function SocialCapitalPanel({ applicantId, features }: SocialCapitalPanelProps) {
   const [activeTab, setActiveTab] = useState<"metrics" | "network" | "risks">("metrics");
+  const [data, setData] = useState<SocialCapitalResponse | null>(null);
+  const [networkData, setNetworkData] = useState<NetworkData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Auto-fetch social capital + network visualization on features change (debounced)
+  useEffect(() => {
+    if (!features) return;
+    let cancelled = false;
+    const timeoutId = setTimeout(() => {
+      async function fetchSocial() {
+        if (!features) return;
+        setLoading(true);
+        try {
+          const [score, network] = await Promise.all([
+            socialCapitalApi.calculate({ entity_id: applicantId, features }),
+            socialCapitalApi.getVisualizationData(applicantId, 2, features),
+          ]);
+          if (!cancelled) {
+            setData(score);
+            setNetworkData(network);
+          }
+        } catch {
+          if (!cancelled) {
+            setData(null);
+            setNetworkData(null);
+          }
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      }
+      fetchSocial();
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [applicantId, features]);
 
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loadingInner}>
-          <svg className={styles.loadingSpinner} viewBox="0 0 24 24">
-            <circle className={styles.spinnerCircle} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className={styles.spinnerPath} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
+          <Loader2 className={styles.loadingSpinner} />
           <span className={styles.loadingText}>Analyzing social capital...</span>
         </div>
       </div>
@@ -34,7 +70,7 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
     return (
       <div className={styles.emptyContainer}>
         <div className={styles.emptyInner}>
-          <span className={styles.emptyIcon}>&#x1F310;</span>
+          <span className={styles.emptyIcon}><Globe className={styles.emptyIconSvg} /></span>
           <p className={styles.emptyText}>Enter applicant data to see social capital analysis</p>
         </div>
       </div>
@@ -49,7 +85,7 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <h2 className={styles.title}>
-            <span className={styles.titleIcon}>&#x1F310;</span>
+            <span className={styles.titleIcon}><Globe className={styles.titleIconSvg} /></span>
             Social Capital Analysis
           </h2>
           <p className={styles.subtitle}>Network-based creditworthiness assessment</p>
@@ -69,9 +105,24 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
       {/* Tabs */}
       <Tabs
         tabs={[
-          { title: "Metrics", value: "metrics" },
-          { title: "Network", value: "network" },
-          { title: "Risks", value: "risks" },
+          {
+            title: (<>
+              <BarChart3 className={styles.tabIconSvg} />
+              Metrics
+            </>), value: "metrics"
+          },
+          {
+            title: (<>
+              <Network className={styles.tabIconSvg} />
+              Network
+            </>), value: "network"
+          },
+          {
+            title: (<>
+              <TriangleAlert className={styles.tabIconSvg} />
+              Risks
+            </>), value: "risks"
+          },
         ]}
         activeTab={activeTab}
         onChange={(v) => setActiveTab(v as "metrics" | "network" | "risks")}
@@ -191,9 +242,9 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
                   <span className={cn(
                     styles.nodeDot,
                     node.type === "individual" ? styles.nodeDotIndividual :
-                    node.type === "organization" ? styles.nodeDotOrganization :
-                    node.type === "business" ? styles.nodeDotBusiness :
-                    styles.nodeDotOther
+                      node.type === "organization" ? styles.nodeDotOrganization :
+                        node.type === "business" ? styles.nodeDotBusiness :
+                          styles.nodeDotOther
                   )} />
                   <span className={styles.nodeLabel}>{node.label}</span>
                 </div>
@@ -217,8 +268,14 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
         <div className={styles.risksContent}>
           {Object.entries(data.risk_indicators).map(([key, value]) => {
             const numVal = typeof value === "number" ? value : parseFloat(String(value)) || 0;
-            // Risk indicators are pre-weighted: fraud_risk=0-0.3, default_risk=0-0.25, reputational_risk=0-0.2
-            const maxMap: Record<string, number> = { fraud_risk: 0.3, default_risk: 0.25, reputational_risk: 0.2 };
+            // Caps match the social capital service output ranges (services/social_capital/app/main.py):
+            // fraud ≤ 0.95, default ≤ 0.9, reputational ≤ 0.85, anomaly ≤ 0.4
+            const maxMap: Record<string, number> = {
+              fraud_risk: 0.95,
+              default_risk: 0.9,
+              reputational_risk: 0.85,
+              anomaly_score: 0.4,
+            };
             const max = maxMap[key] ?? 1;
             const normalized = Math.min(1, numVal / max);
             const level = normalized < 0.33 ? "low" : normalized < 0.66 ? "medium" : "high";
@@ -239,8 +296,8 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
                         className={cn(
                           styles.riskBarFill,
                           level === "low" ? styles.riskBarFillLow :
-                          level === "medium" ? styles.riskBarFillMedium :
-                          styles.riskBarFillHigh
+                            level === "medium" ? styles.riskBarFillMedium :
+                              styles.riskBarFillHigh
                         )}
                         style={{ width: `${normalized * 100}%` }}
                       />
@@ -248,8 +305,8 @@ export function SocialCapitalPanel({ data, networkData, loading }: SocialCapital
                     <span className={cn(
                       styles.riskValue,
                       level === "low" ? styles.riskValueLow :
-                      level === "medium" ? styles.riskValueMedium :
-                      styles.riskValueHigh
+                        level === "medium" ? styles.riskValueMedium :
+                          styles.riskValueHigh
                     )}>
                       {(normalized * 100).toFixed(0)}%
                     </span>
