@@ -117,6 +117,16 @@ async def get_insights(request: Dict[str, Any]):
         # Get social insights - pass features for feature-aware calculation
         social = engine.social.calculate_social_capital(entity_id, features)
 
+        # Combined recommendation — the authoritative final decision. Computed
+        # once here so the "recommendation" field and the summary line stay in
+        # sync (previously the summary reported causal['recommendation'], which
+        # could contradict the combined recommendation shown on the same card).
+        combined_recommendation = _combine_recommendation(
+            ml_score["risk_level"],
+            causal["recommendation"],
+            social["risk_indicators"]
+        )
+
         # Create unified insights
         return {
             "applicant_id": applicant_id,
@@ -149,15 +159,11 @@ async def get_insights(request: Dict[str, Any]):
             "social_credit_score": social["social_credit_score"],
 
             # Combined recommendation
-            "recommendation": _combine_recommendation(
-                ml_score["risk_level"],
-                causal["recommendation"],
-                social["risk_indicators"]
-            ),
+            "recommendation": combined_recommendation,
             "confidence": causal["confidence"],
 
             # Human readable summary
-            "summary": _generate_summary(ml_score, causal, social)
+            "summary": _generate_summary(ml_score, causal, social, combined_recommendation)
         }
 
     except Exception as e:
@@ -266,7 +272,7 @@ async def agentic_analysis(request: Dict[str, Any]):
                 "fra": {
                     "agent": "Financial Risk Analysis",
                     "risk_score": financial_risk,
-                    "financial_health": _assess_financial_health(features),
+                    "financial_health": _assess_financial_health(financial_risk),
                     "key_metrics": _extract_key_metrics(features)
                 },
                 "gra": {
@@ -409,7 +415,15 @@ async def get_agent_report(applicant_id: str, request: Dict[str, Any]):
             "agent_consensus": {
                 "bra_score": bra.get("risk_score", 0),
                 "fra_score": fra.get("risk_score", 0),
-                "gra_score": gra.get("trust_score", 0) * 0.3,
+                # Governance has no single risk_score in the analyze response;
+                # derive the same 0-1 governance risk the agent-grid uses
+                # (avg of fraud_risk/0.3 and reputational_risk/0.2) so the
+                # consensus block agrees with the grid instead of showing a
+                # trust*weight value that isn't comparable.
+                "gra_score": (
+                    min(1.0, gra.get("fraud_risk", 0) / 0.3)
+                    + min(1.0, gra.get("reputational_risk", 0) / 0.2)
+                ) / 2,
                 "caa_decision": consensus
             },
 
@@ -467,17 +481,25 @@ def _describe_governance_risk(gra: Dict) -> str:
     return f"Medium - Trust score {trust:.0%} with typical network patterns ({connections} connections)"
 
 
-def _assess_financial_health(features: Dict[str, float]) -> str:
-    """Assess financial health from features."""
-    util = features.get("RevolvingUtilizationOfUnsecuredLines", 0.5)
-    debt = features.get("DebtRatio", 0.3)
-    income = features.get("MonthlyIncome", 5000)
+def _assess_financial_health(financial_risk: float) -> str:
+    """Assess financial health from the FRA risk score.
 
-    if util < 0.3 and debt < 0.4 and income > 8000:
+    The FRA score (calculate_financial_risk) already weights debt burden
+    (40%), income adequacy (35%), and credit-line leverage (25%) into a
+    0..1 value where higher = worse financial health. Map that score to a
+    label so the displayed health stays consistent with the
+    decision-driving score and actually reflects income.
+
+    Previously this re-thresholded raw features on utilization alone and
+    only checked income in the narrow "excellent" tier, so a high-income
+    applicant with high utilization was always labeled "poor" regardless
+    of income.
+    """
+    if financial_risk < 0.30:
         return "excellent"
-    elif util < 0.5 and debt < 0.6:
+    elif financial_risk < 0.50:
         return "good"
-    elif util < 0.7:
+    elif financial_risk < 0.70:
         return "fair"
     else:
         return "poor"
@@ -514,7 +536,13 @@ def _calculate_rating(risk_score: float) -> str:
 
 
 def _ssa_validate_outputs(agent_outputs: Dict[str, Any]) -> Dict[str, Any]:
-    """System Supervisory Agent validation."""
+    """System Supervisory Agent validation.
+
+    Quality gate over agent outputs: range integrity, score consistency,
+    and consensus coherence. Validation fails when outputs fall outside
+    [0,1], when risk scores diverge beyond a tolerable threshold, or when
+    the CAA decision contradicts the evidence — it is not a rubber stamp.
+    """
     validation = {
         "passed": True,
         "score": 0.95,
@@ -522,17 +550,45 @@ def _ssa_validate_outputs(agent_outputs: Dict[str, Any]) -> Dict[str, Any]:
         "anomalies": []
     }
 
-    # Check for consensus consistency
-    scores = [v.get("risk_score", 0.5) for k, v in agent_outputs.items() if "risk_score" in v]
-    if scores:
-        avg_score = sum(scores) / len(scores)
-        variance = sum((s - avg_score) ** 2 for s in scores) / len(scores)
+    # Range integrity + collect comparable 0-1 risk scores (BRA, FRA, CRA).
+    risk_scores: Dict[str, float] = {}
+    for key in ("bra", "fra", "cra"):
+        out = agent_outputs.get(key, {})
+        score = out.get("risk_score", out.get("composite_score"))
+        if score is None:
+            continue
+        if not isinstance(score, (int, float)) or not (0.0 <= score <= 1.0):
+            validation["anomalies"].append(f"{key.upper()} score out of [0,1] range: {score}")
+            validation["score"] -= 0.3
+            continue
+        risk_scores[key] = float(score)
 
+    # Consensus coherence: CAA decision must not contradict the evidence.
+    caa = agent_outputs.get("caa", {})
+    decision = caa.get("decision")
+    if risk_scores and decision:
+        avg_risk = sum(risk_scores.values()) / len(risk_scores)
+        if decision == "approve" and avg_risk >= 0.6:
+            validation["anomalies"].append(f"CAA 'approve' contradicts high average risk {avg_risk:.2f}")
+            validation["score"] -= 0.3
+        elif decision == "deny" and avg_risk < 0.3:
+            validation["anomalies"].append(f"CAA 'deny' contradicts low average risk {avg_risk:.2f}")
+            validation["score"] -= 0.3
+
+    # Score consistency: high variance across agents signals disagreement.
+    if len(risk_scores) >= 2:
+        avg_score = sum(risk_scores.values()) / len(risk_scores)
+        variance = sum((s - avg_score) ** 2 for s in risk_scores.values()) / len(risk_scores)
         if variance > 0.1:
             validation["anomalies"].append(f"High variance in risk scores: {variance:.2f}")
-            validation["score"] -= 0.1
+            validation["score"] -= 0.2
 
-    validation["trace"] = [f"{k}: {v.get('decision', 'N/A')}" for k, v in agent_outputs.items()]
+    validation["trace"] = [
+        f"{k}: {v.get('decision', v.get('risk_score', v.get('composite_score', 'N/A')))}"
+        for k, v in agent_outputs.items()
+    ]
+    validation["score"] = max(0.0, validation["score"])
+    validation["passed"] = validation["score"] >= 0.7 and not validation["anomalies"]
 
     return validation
 
@@ -549,7 +605,7 @@ def _combine_recommendation(ml_level: str, causal_rec: str, risks: Dict) -> str:
         return "review"
 
 
-def _generate_summary(ml: Dict, causal: Dict, social: Dict) -> str:
+def _generate_summary(ml: Dict, causal: Dict, social: Dict, final_recommendation: str) -> str:
     """Generate human-readable summary."""
     parts = []
 
@@ -562,8 +618,9 @@ def _generate_summary(ml: Dict, causal: Dict, social: Dict) -> str:
     # Social summary
     parts.append(f"Social trust: {social['scores']['trust']:.0%} with {social['connection_count']} connections")
 
-    # Combined
-    parts.append(f"Final recommendation: {causal['recommendation']}")
+    # Combined — use the authoritative combined recommendation so the summary
+    # never contradicts the Recommendation field on the same card.
+    parts.append(f"Final recommendation: {final_recommendation}")
 
     return ". ".join(parts)
 

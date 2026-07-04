@@ -15,8 +15,8 @@ FEATURE_WEIGHTS = {
     "DebtRatio": 0.25,
     "age": 0.10,
     "NumberOfTimes90DaysLate": 0.15,
-    "NumberOfTime30_59DaysPastDueNotWorse": 0.10,
-    "NumberOfTime60_89DaysPastDueNotWorse": 0.08,
+    "NumberOfTime30_59DaysPastDueNotWorse": 0.08,
+    "NumberOfTime60_89DaysPastDueNotWorse": 0.10,
     "NumberRealEstateLoansOrLines": 0.05,
     "NumberOfOpenCreditLinesAndLoans": 0.02,
     "MonthlyIncome": 0.08,
@@ -28,8 +28,8 @@ FEATURE_WEIGHTS = {
 BEHAVIORAL_FEATURES = {
     "RevolvingUtilizationOfUnsecuredLines": 0.30,
     "NumberOfTimes90DaysLate": 0.25,
-    "NumberOfTime30_59DaysPastDueNotWorse": 0.15,
-    "NumberOfTime60_89DaysPastDueNotWorse": 0.12,
+    "NumberOfTime30_59DaysPastDueNotWorse": 0.12,
+    "NumberOfTime60_89DaysPastDueNotWorse": 0.17,
     "NumberOfOpenCreditLinesAndLoans": 0.08,
     "NumberRealEstateLoansOrLines": 0.06,
     "NumberOfDependents": 0.04,
@@ -256,25 +256,54 @@ def calculate_financial_risk(features: Dict[str, float]) -> float:
 
 
 class PropensityModel:
-    """Propensity score model based on actual feature values."""
+    """Propensity score model: likelihood of responsible repayment.
+
+    High propensity = financially mature, stable income, disciplined credit
+    use, and a clean payment history -> low risk -> approve. Low propensity =
+    young/low-income, over-extended (high utilization & debt), and/or a
+    delinquency history -> high risk -> deny.
+
+    The score must move in the SAME direction as repayment likelihood. The
+    previous formula's `credit_seeking = util*1.2 + debt*0.5` term did the
+    opposite — it inflated propensity for over-extended applicants — so a
+    high-utilization/high-debt profile scored as low-risk. It is replaced by
+    `credit_discipline`, which rewards LOW utilization and LOW debt, plus a
+    `payment_history` term (previously absent) that penalizes delinquencies.
+    """
 
     def predict(self, features: Dict[str, float]) -> float:
-        """Predict propensity score based on risk-neutral behavior."""
-        risk = calculate_risk_score(features)
-
-        revolving = features.get("RevolvingUtilizationOfUnsecuredLines", 0.5)
-        debt_ratio = features.get("DebtRatio", 0.3)
-        income = features.get("MonthlyIncome", 5000)
+        """Predict propensity score from repayment-likelihood signals."""
         age = features.get("age", 35)
+        income = features.get("MonthlyIncome", 5000)
+        util = features.get("RevolvingUtilizationOfUnsecuredLines", 0.5)
+        debt_ratio = features.get("DebtRatio", 0.3)
+        late_30 = features.get("NumberOfTime30_59DaysPastDueNotWorse", 0)
+        late_60 = features.get("NumberOfTime60_89DaysPastDueNotWorse", 0)
+        late_90 = features.get("NumberOfTimes90DaysLate", 0)
 
-        financial_maturity = min(1.0, (age - 18) / 32)
-        credit_seeking = min(1.0, revolving * 1.2 + debt_ratio * 0.5)
-        income_stability = min(1.0, income / 10000)
+        # Financial maturity: older applicants have longer credit history and
+        # more earning stability (age 18 -> 0, age 50+ -> 1).
+        financial_maturity = min(1.0, max(0.0, (age - 18) / 32))
 
-        propensity = financial_maturity * 0.3 + credit_seeking * 0.4 + income_stability * 0.3
-        risk_adjustment = (0.5 - risk) * 0.2
+        # Income stability: higher income -> more capacity to repay (caps at $10k).
+        income_stability = min(1.0, max(0.0, income / 10000))
 
-        return float(min(0.99, max(0.01, propensity + risk_adjustment)))
+        # Credit discipline: LOW utilization and LOW debt ratio mean the
+        # applicant is not over-extended (1.0 = disciplined, 0.0 = maxed out).
+        credit_discipline = (1.0 - min(1.0, util)) * 0.5 + (1.0 - min(1.0, debt_ratio)) * 0.5
+
+        # Payment history: clean delinquency record -> 1.0; 6+ weighted lates -> 0.
+        delinquency_count = late_30 + late_60 + late_90
+        payment_history = 1.0 - min(1.0, delinquency_count / 6)
+
+        propensity = (
+            financial_maturity * 0.25
+            + income_stability * 0.25
+            + credit_discipline * 0.30
+            + payment_history * 0.20
+        )
+
+        return float(min(0.99, max(0.01, propensity)))
 
 
 class CausalEngine:
@@ -389,8 +418,32 @@ class CausalEngine:
         return scenarios
 
     def get_optimal_decision(self, scenarios: List[Dict[str, Any]]) -> Tuple[str, float]:
-        """Determine optimal decision from counterfactuals."""
-        best = min(scenarios, key=lambda x: abs(x["risk_change"]) if x["treatment"] != "deny" else 1.0)
+        """Determine the optimal risk-mitigating decision from counterfactuals.
+
+        Picks the actionable lending adjustment with the largest risk
+        reduction (most negative risk_change). The baseline `approve`
+        (risk_change 0.0) and the definitional `deny` (whose 0% default is an
+        artifact of not lending, not a real risk reduction) are excluded as
+        candidates; `deny` remains a row in the counterfactuals table but is
+        not reported as the "optimal" improvement lever. Expected improvement
+        is the magnitude of the best reduction; if no adjustment lowers risk,
+        the baseline approve is optimal with 0 improvement.
+
+        Previously this used min(|risk_change|), which always selected the
+        baseline `approve` (change 0.0) and reported a fixed 0.0% improvement
+        for every applicant.
+        """
+        candidates = [
+            s for s in scenarios
+            if s["treatment"] not in ("approve", "deny")
+        ]
+        if not candidates:
+            return "approve", 0.0
+
+        # Most negative risk_change = biggest real risk reduction.
+        best = min(candidates, key=lambda x: x["risk_change"])
+        if best["risk_change"] >= 0:
+            return "approve", 0.0
         return best["treatment"], abs(best["risk_change"])
 
 
@@ -662,12 +715,18 @@ class AugmentedScoringEngine:
 
         optimal, improvement = self.causal.get_optimal_decision(counterfactuals)
 
+        # Propensity tier is a RISK tier: "low" tier = high propensity score
+        # (financially mature, low risk) -> approve; "high" tier = low propensity
+        # (high risk) -> deny. This must agree with calculate_combined_score,
+        # which treats causal_risk = 1 - propensity (high propensity = low risk).
+        # Previously this was inverted (low-risk tier -> deny), contradicting both
+        # the combined-score logic and the documented causal semantics.
         if propensity["tier"] == "low":
-            recommendation = "deny"
-            confidence = 0.75
-        elif propensity["tier"] == "high":
             recommendation = "approve"
             confidence = 0.85
+        elif propensity["tier"] == "high":
+            recommendation = "deny"
+            confidence = 0.80
         else:
             recommendation = "review"
             confidence = 0.65
