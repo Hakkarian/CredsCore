@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { FlaskConical } from "lucide-react";
 import { syntheticDataApi, SyntheticDataResponse, QualityMetrics } from "@/lib/api";
 import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
 import { QualityMetricsDisplay } from "./quality-metrics";
@@ -123,7 +124,7 @@ export function TestPanel({ onGenerate }: TestPanelProps = {}) {
       {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>
-          <span className={styles.titleIcon}>&#x1F9EA;</span>
+          <FlaskConical className={styles.titleIcon} size={22} />
           Synthetic Data Test Panel
         </h2>
         <p className={styles.subtitle}>Generate and validate synthetic credit data</p>

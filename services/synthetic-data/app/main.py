@@ -5,6 +5,7 @@ Generates privacy-safe synthetic credit application data using CTGAN.
 
 import sys
 import os
+import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -12,6 +13,7 @@ from typing import Optional
 import logging
 import uuid
 
+import httpx
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -34,11 +36,15 @@ from app.simple_engine import get_simple_engine
 from app.models import (
     GenerationRequest,
     GenerationResponse,
+    GenerationWithAnalysisRequest,
     SyntheticRecord,
     CreditFeatures,
     QualityMetrics,
 )
 from app.config import config
+
+# Credit Scoring service URL for downstream drift + peer-group analysis
+CREDIT_SCORING_URL = os.getenv("CREDIT_SCORING_URL", "http://localhost:8001")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -211,6 +217,7 @@ async def root():
         "endpoints": {
             "health": "GET /health",
             "generate": "POST /generate",
+            "generate-with-analysis": "POST /generate-with-analysis",
         },
     }
 
@@ -251,6 +258,97 @@ async def generate_data(request: GenerationRequest):
         raise
     except Exception as e:
         logger.error(f"Generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
+
+
+async def _post_analysis(client: httpx.AsyncClient, url: str, params: dict, batch: list) -> tuple:
+    """POST a batch to an analysis endpoint. Returns (result_dict, None) or (None, error_str)."""
+    try:
+        resp = await client.post(url, params=params, json=batch)
+        resp.raise_for_status()
+        return resp.json(), None
+    except Exception as e:
+        return None, f"{type(e).__name__}: {str(e)}"
+
+
+@app.post("/generate-with-analysis")
+async def generate_with_analysis(request: GenerationWithAnalysisRequest):
+    """Generate synthetic data and auto-compute drift + peer-group analysis.
+
+    Generation failures raise HTTPException; downstream analysis failures are
+    best-effort and surfaced via the ``*_error`` fields in the response.
+    """
+    try:
+        logger.info(f"Generating {request.num_records} synthetic records for combined analysis...")
+
+        # Reuse the same generation pipeline as /generate
+        engine = get_simple_engine()
+        df = engine.generate(
+            num_records=request.num_records,
+            random_seed=request.random_seed,
+        )
+        generation_id = str(uuid.uuid4())
+        records = dataframe_to_records(df, generation_id)
+        quality_metrics = calculate_quality_metrics(df)
+
+        # Batch payload: list of feature dicts with underscore field names
+        batch = [r.features.model_dump() for r in records]
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            tasks = []
+            if request.include_drift:
+                tasks.append(
+                    _post_analysis(
+                        client,
+                        f"{CREDIT_SCORING_URL}/monitor-drift",
+                        {"n_clusters": request.drift_n_clusters},
+                        batch,
+                    )
+                )
+            if request.include_peer_groups:
+                tasks.append(
+                    _post_analysis(
+                        client,
+                        f"{CREDIT_SCORING_URL}/peer-groups",
+                        {"n_clusters": request.peer_n_clusters},
+                        batch,
+                    )
+                )
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        drift_result, drift_error = None, None
+        peer_groups_result, peer_groups_error = None, None
+        idx = 0
+        if request.include_drift:
+            res = results[idx]
+            idx += 1
+            if isinstance(res, Exception):
+                drift_error = f"{type(res).__name__}: {str(res)}"
+            else:
+                drift_result, drift_error = res
+        if request.include_peer_groups:
+            res = results[idx]
+            if isinstance(res, Exception):
+                peer_groups_error = f"{type(res).__name__}: {str(res)}"
+            else:
+                peer_groups_result, peer_groups_error = res
+
+        return {
+            "num_records": len(records),
+            "records": [r.model_dump() for r in records],
+            "quality_metrics": quality_metrics.model_dump(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "drift": drift_result,
+            "peer_groups": peer_groups_result,
+            "drift_error": drift_error,
+            "peer_groups_error": peer_groups_error,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Generate-with-analysis failed: {e}")
         raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
 
 

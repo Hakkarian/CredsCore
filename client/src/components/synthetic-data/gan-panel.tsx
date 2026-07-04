@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { syntheticDataApi, SyntheticDataResponse, QualityMetrics, SyntheticRecord } from "@/lib/api";
+import { Palette } from "lucide-react";
+import { syntheticDataApi, SyntheticDataResponse, SyntheticAnalysisResponse, QualityMetrics, SyntheticRecord } from "@/lib/api";
 import { ShimmerBorder, ShimmerTiltCard } from "@/components/ui/shimmer-tilt-card";
+import { DriftResultsView } from "@/components/dashboard/drift-results-view";
+import { PeerGroupsResultsView } from "@/components/dashboard/peer-groups-results-view";
 import { GanModelStatus } from "./gan-model-status";
 import { QualityMetricsDisplay } from "./quality-metrics";
 import { DataPreview } from "./data-preview";
@@ -17,7 +20,7 @@ export function GanPanel({ onGenerate }: GanPanelProps) {
   const [numRecords, setNumRecords] = useState(500);
   const [applyConstraints, setApplyConstraints] = useState(true);
   const [randomSeed, setRandomSeed] = useState<string>("");
-  const [generatedData, setGeneratedData] = useState<SyntheticDataResponse | null>(null);
+  const [generatedData, setGeneratedData] = useState<SyntheticAnalysisResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -27,10 +30,12 @@ export function GanPanel({ onGenerate }: GanPanelProps) {
     setError(null);
     try {
       const seed = randomSeed ? parseInt(randomSeed) : null;
-      const result = await syntheticDataApi.generateSyntheticData({
+      const result = await syntheticDataApi.generateSyntheticDataWithAnalysis({
         num_records: numRecords,
         apply_constraints: applyConstraints,
         random_seed: seed,
+        drift_n_clusters: 10,
+        peer_n_clusters: 5,
       });
       setGeneratedData(result);
       onGenerate?.(result);
@@ -46,7 +51,7 @@ export function GanPanel({ onGenerate }: GanPanelProps) {
       {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>
-          <span className={styles.titleIcon}>&#x1F3A8;</span>
+          <Palette className={styles.titleIcon} size={22} />
           Synthetic Data Generator
         </h2>
         <p className={styles.subtitle}>Generate realistic synthetic credit data with GAN</p>
@@ -199,6 +204,34 @@ export function GanPanel({ onGenerate }: GanPanelProps) {
             </div>
           </div>
         </ShimmerBorder>
+      )}
+
+      {/* Drift Analysis (auto-computed on generation) */}
+      {generatedData && (generatedData.drift || generatedData.drift_error) && (
+        <div>
+          <h3 className={styles.analysisSectionTitle}>Drift Analysis</h3>
+          {generatedData.drift ? (
+            <DriftResultsView result={generatedData.drift} />
+          ) : (
+            <div className={styles.errorContainer}>
+              <p className={styles.errorText}>{generatedData.drift_error}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Peer Groups (auto-computed on generation) */}
+      {generatedData && (generatedData.peer_groups || generatedData.peer_groups_error) && (
+        <div>
+          <h3 className={styles.analysisSectionTitle}>Peer Groups</h3>
+          {generatedData.peer_groups ? (
+            <PeerGroupsResultsView result={generatedData.peer_groups} />
+          ) : (
+            <div className={styles.errorContainer}>
+              <p className={styles.errorText}>{generatedData.peer_groups_error}</p>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
