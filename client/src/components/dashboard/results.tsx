@@ -59,7 +59,7 @@ export function StatsGrid() {
           className={styles.statCard}
         >
           <div className={styles.statHeader}>
-            <span className={styles.statIcon}>{stat.icon}</span>
+            <span className={styles.statIcon}><stat.icon className={styles.statIconSvg} /></span>
             <span
               className={cn(
                 styles.trendUp,

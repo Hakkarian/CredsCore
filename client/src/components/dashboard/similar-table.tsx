@@ -1,19 +1,20 @@
 "use client";
 
+import { Trophy, Medal, Award } from "lucide-react";
 import { EnrichedSimilarApplicant } from "@/lib/types";
 import { MiniSparkline } from "./charts/mini-sparkline";
-import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
-import { cn } from "@/lib/utils";
-import styles from "./similar-table.module.scss";
 
 interface SimilarTableProps {
   data: EnrichedSimilarApplicant[];
 }
+import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
+import { cn } from "@/lib/utils";
+import styles from "./similar-table.module.scss";
 
-function getRankIcon(rank: number): string {
-  if (rank === 1) return "\u{1F947}";
-  if (rank === 2) return "\u{1F948}";
-  if (rank === 3) return "\u{1F949}";
+function getRankIcon(rank: number): React.ReactNode {
+  if (rank === 1) return <Trophy className={styles.rankIconSvg} />;
+  if (rank === 2) return <Medal className={styles.rankIconSvg} />;
+  if (rank === 3) return <Award className={styles.rankIconSvg} />;
   return `#${rank}`;
 }
 

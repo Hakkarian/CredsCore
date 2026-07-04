@@ -2,25 +2,21 @@
 
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
+import { FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePeerGroupsMutation, useGenerateSyntheticData } from "@/hooks/use-credit-api";
-import { PeerGroupsResult, SyntheticDataResponse, ApplicantData } from "@/lib/api";
+import { usePeerGroupsMutation } from "@/hooks/use-credit-api";
+import { PeerGroupsResult, ApplicantData } from "@/lib/api";
 import { ShimmerBorder } from "@/components/ui/shimmer-tilt-card";
+import { PeerGroupsResultsView } from "./peer-groups-results-view";
 import styles from "./groups-panel.module.scss";
 
-interface GroupsPanelProps {
-  onDataGenerated?: (data: SyntheticDataResponse) => void;
-}
-
-export function GroupsPanel({ onDataGenerated }: GroupsPanelProps = {}) {
+export function GroupsPanel() {
   const [result, setResult] = useState<PeerGroupsResult | null>(null);
   const [nClusters, setNClusters] = useState(5);
   const [uploadedData, setUploadedData] = useState<ApplicantData[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [generatedData, setGeneratedData] = useState<SyntheticDataResponse | null>(null);
 
   const { mutate: analyzeGroups, isPending } = usePeerGroupsMutation();
-  const generateMutation = useGenerateSyntheticData();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -101,31 +97,13 @@ export function GroupsPanel({ onDataGenerated }: GroupsPanelProps = {}) {
     );
   };
 
-  const handleGenerateSynthetic = () => {
-    generateMutation.mutate(
-      { num_records: 500, apply_constraints: true, random_seed: null },
-      {
-        onSuccess: (data) => {
-          setGeneratedData(data);
-          onDataGenerated?.(data);
-        },
-      }
-    );
-  };
-
-  const segmentRiskStyles: Record<string, string> = {
-    high: styles.segmentRiskHigh,
-    medium: styles.segmentRiskMedium,
-    low: styles.segmentRiskLow,
-  };
-
   return (
     <div className={styles.container}>
       {/* Upload Area */}
       <ShimmerBorder borderRadius="1rem">
         <div>
           <h3 className={styles.uploadHeading}>
-            <span className={styles.uploadIcon}>&#x1F4C1;</span>
+            <span className={styles.uploadIcon}><FolderOpen className={styles.uploadIconSvg} /></span>
             Upload Data
           </h3>
           <div
@@ -181,113 +159,12 @@ export function GroupsPanel({ onDataGenerated }: GroupsPanelProps = {}) {
             >
               {isPending ? "Analyzing..." : "Analyze Peer Groups"}
             </button>
-            <button
-              onClick={handleGenerateSynthetic}
-              disabled={generateMutation.isPending}
-              className={cn(
-                styles.secondaryButton,
-                generateMutation.isPending && styles.secondaryButtonDisabled
-              )}
-            >
-              {generateMutation.isPending ? "Generating..." : "Generate Synthetic Data"}
-            </button>
           </div>
         </div>
       </ShimmerBorder>
 
       {/* Results */}
-      {result && (
-        <ShimmerBorder borderRadius="1rem">
-          <div className={styles.controlsSection}>
-            <h3 className={styles.sectionTitle}>Peer Group Results</h3>
-
-            {/* Summary Stats */}
-            <div className={styles.summaryGrid}>
-              <div className={styles.summaryCard}>
-                <p className={styles.summaryLabel}>Segments</p>
-                <p className={styles.summaryValuePrimary}>{result.n_segments}</p>
-              </div>
-              <div className={styles.summaryCard}>
-                <p className={styles.summaryLabel}>Customers</p>
-                <p className={styles.summaryValueNeutral}>{result.total_customers}</p>
-              </div>
-              <div className={styles.summaryCard}>
-                <p className={styles.summaryLabel}>Highest Risk</p>
-                <p className={styles.summaryValueRisk}>{result.summary.highest_risk_segment || "-"}</p>
-              </div>
-            </div>
-
-            {/* Segment Details */}
-            {result.segments && result.segments.length > 0 && (
-              <div className={styles.segmentSection}>
-                <h4 className={styles.segmentSectionTitle}>Segment Details</h4>
-                {result.segments.map((segment, i) => (
-                  <div key={i} className={styles.segmentCard}>
-                    <div className={styles.segmentHeader}>
-                      <span className={styles.segmentName}>{segment.segment}</span>
-                      <div className={styles.segmentBadges}>
-                        <span className={styles.segmentBadge}>
-                          {segment.size} members ({segment.percentage})
-                        </span>
-                        <span className={cn(styles.segmentRiskBadge, segmentRiskStyles[segment.risk_level] ?? styles.segmentRiskLow)}>
-                          {segment.risk_level}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.segmentMeta}>
-                      <span className={styles.segmentMetaLabel}>Default rate:</span>
-                      <span className={styles.segmentMetaValue}>{segment.default_rate}</span>
-                    </div>
-                    {segment.profile && Object.keys(segment.profile).length > 0 && (
-                      <div className={styles.segmentProfileGrid}>
-                        {Object.entries(segment.profile).slice(0, 6).map(([key, value]) => (
-                          <div key={key} className={styles.segmentProfileRow}>
-                            <span className={styles.segmentProfileKey}>{key}</span>
-                            <span className={styles.segmentProfileValue}>
-                              {typeof value === "number" ? value.toFixed(2) : String(value)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Human Explanation */}
-            {result.human_explanation && (
-              <div className={styles.explanationBox}>
-                <p className={styles.explanationText}>{result.human_explanation}</p>
-              </div>
-            )}
-          </div>
-        </ShimmerBorder>
-      )}
-
-      {/* Generated Data Info */}
-      {generatedData && (
-        <ShimmerBorder borderRadius="1rem">
-          <div>
-            <h3 className={styles.sectionTitleMb2}>Generated Synthetic Data</h3>
-            <p className={styles.dropzoneFileCount}>
-              {generatedData.num_records || generatedData.records?.length || 0} records generated
-            </p>
-            {generatedData.quality_metrics && (
-              <div className={styles.qualityGrid}>
-                {Object.entries(generatedData.quality_metrics).slice(0, 4).map(([key, value]) => (
-                  <div key={key} className={styles.qualityCard}>
-                    <p className={styles.qualityLabel}>{key.replace(/_/g, " ")}</p>
-                    <p className={styles.qualityValue}>
-                      {typeof value === "number" ? (value * 100).toFixed(1) + "%" : String(value)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </ShimmerBorder>
-      )}
+      {result && <PeerGroupsResultsView result={result} />}
     </div>
   );
 }

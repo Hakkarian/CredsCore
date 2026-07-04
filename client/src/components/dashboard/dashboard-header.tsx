@@ -1,5 +1,6 @@
 "use client";
 
+import { BarChart3, Users, FlaskConical, Search, Bot, CheckCircle2, Zap } from "lucide-react";
 import { FloatingNav } from "@/components/ui/floating-nav";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 import { Tabs } from "@/components/ui/tabs";
@@ -13,13 +14,11 @@ export const NAV_ITEMS = [
 
 // Tab definitions for the dashboard
 export const DASHBOARD_TABS = [
-  { id: "predict", label: "Predict", icon: "📊" },
-  { id: "similar", label: "Similar", icon: "👥" },
-  { id: "synthetic", label: "Synthetic", icon: "🧪" },
-  { id: "drift", label: "Drift", icon: "📉" },
-  { id: "groups", label: "Groups", icon: "🧩" },
-  { id: "insights", label: "Insights", icon: "🔍" },
-  { id: "agentic", label: "Agentic", icon: "🤖" },
+  { id: "predict", label: "Predict", icon: BarChart3 },
+  { id: "similar", label: "Similar", icon: Users },
+  { id: "synthetic", label: "Synthetic", icon: FlaskConical },
+  { id: "insights", label: "Insights", icon: Search },
+  { id: "agentic", label: "Agentic", icon: Bot },
 ] as const;
 
 export type DashboardTabId = (typeof DASHBOARD_TABS)[number]["id"];
@@ -50,16 +49,24 @@ export function PageHeader({ title, subtitle }: PageHeaderProps) {
 }
 
 interface TabBarProps {
-  tabs: readonly { id: string; label: string; icon: string }[];
+  tabs: readonly { id: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
 }
 
 export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
-  const aceternityTabs = tabs.map((tab) => ({
-    title: `${tab.icon} ${tab.label}`,
-    value: tab.id,
-  }));
+  const aceternityTabs = tabs.map((tab) => {
+    const Icon = tab.icon;
+    return {
+      title: (
+        <>
+          <Icon className={styles.tabIcon} />
+          {tab.label}
+        </>
+      ),
+      value: tab.id,
+    };
+  });
 
   return (
     <div className={styles.tabBar}>
@@ -74,9 +81,9 @@ export function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
 
 // Stats data used by StatsGrid in results.tsx
 export const STATS = [
-  { icon: "📊", value: "1,247", label: "Total Applications", trend: "+12.5%" },
-  { icon: "✅", value: "89.3%", label: "Approval Rate", trend: "+2.1%" },
-  { icon: "⚡", value: "0.8s", label: "Avg Response Time", trend: "-15.2%" },
+  { icon: BarChart3, value: "1,247", label: "Total Applications", trend: "+12.5%" },
+  { icon: CheckCircle2, value: "89.3%", label: "Approval Rate", trend: "+2.1%" },
+  { icon: Zap, value: "0.8s", label: "Avg Response Time", trend: "-15.2%" },
 ];
 
 // Recent predictions data used by RecentActivityTable in results.tsx

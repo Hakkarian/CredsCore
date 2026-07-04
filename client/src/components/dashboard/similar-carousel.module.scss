@@ -33,7 +33,6 @@
 .carouselWrapper {
   position: relative;
   overflow-x: auto;
-  overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
@@ -41,9 +40,9 @@
   }
   width: 100%;
   min-width: 0; // Allow shrinking in grid
-  // Fixed height for proper scrolling container
-  height: 320px;
-  // Padding to keep cards visible away from nav buttons
+  // Size to the tallest card instead of a fixed height. A fixed 320px with
+  // overflow-y:hidden clipped the sparkline/source section at the bottom of
+  // every card (~340px tall). Flex stretch keeps all cards equal height.
   padding: 0 3.5rem 1rem;
 }
 
@@ -95,6 +94,11 @@
   &.next {
     right: 0.5rem;
   }
+}
+
+.navButtonIcon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .navButton {
@@ -238,6 +242,11 @@
   border: 1px solid;
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.rankIconSvg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .rank1 {
