@@ -40,10 +40,18 @@ export function DataPreview({ records, totalCount }: DataPreviewProps) {
   const totalPages = Math.ceil(records.length / pageSize);
   const pageRecords = records.slice(page * pageSize, (page + 1) * pageSize);
 
-  // Determine which columns are actually present in the data
+  // Determine which columns are actually present in the data.
+  // The synthetic service nests the 10 credit features under `record.features`,
+  // so check both the top-level record and the nested features object.
   const presentColumns = records.length > 0
-    ? DISPLAY_COLUMNS.filter(col => col in records[0])
+    ? DISPLAY_COLUMNS.filter(col => col in records[0] || Boolean(records[0].features && col in records[0].features))
     : DISPLAY_COLUMNS;
+
+  const getCell = (record: SyntheticRecord, col: string): number | string | null | undefined => {
+    const top = record[col];
+    if (top !== undefined && top !== null && typeof top !== "object") return top as number | string;
+    return record.features?.[col];
+  };
 
   return (
     <ShimmerBorder borderRadius="1rem">
@@ -72,15 +80,18 @@ export function DataPreview({ records, totalCount }: DataPreviewProps) {
               {pageRecords.map((record, i) => (
                 <tr key={i} className={styles.tableRow}>
                   <td className={styles.tdIndex}>{page * pageSize + i + 1}</td>
-                  {presentColumns.map((col) => (
-                    <td key={col} className={styles.tdCell}>
-                      {record[col] !== undefined && record[col] !== null
-                        ? typeof record[col] === "number"
-                          ? record[col].toFixed(col === "age" || col === "NumberOfDependents" || col === "NumberOfOpenCreditLinesAndLoans" || col === "NumberRealEstateLoansOrLines" ? 0 : 3)
-                          : String(record[col])
-                        : "-"}
-                    </td>
-                  ))}
+                  {presentColumns.map((col) => {
+                    const value = getCell(record, col);
+                    return (
+                      <td key={col} className={styles.tdCell}>
+                        {value !== undefined && value !== null
+                          ? typeof value === "number"
+                            ? value.toFixed(col === "age" || col === "NumberOfDependents" || col === "NumberOfOpenCreditLinesAndLoans" || col === "NumberRealEstateLoansOrLines" ? 0 : 3)
+                            : String(value)
+                          : "-"}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

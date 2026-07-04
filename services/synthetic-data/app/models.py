@@ -45,6 +45,15 @@ class GenerationRequest(BaseModel):
     random_seed: Optional[int] = Field(None, description="Random seed")
 
 
+class GenerationWithAnalysisRequest(GenerationRequest):
+    """Request to generate synthetic data and auto-compute drift + peer-group analysis."""
+
+    drift_n_clusters: int = Field(10, ge=2, le=20, description="Clusters for drift monitoring")
+    peer_n_clusters: int = Field(5, ge=2, le=20, description="Segments for peer-group analysis")
+    include_drift: bool = Field(True, description="Compute drift analysis")
+    include_peer_groups: bool = Field(True, description="Compute peer-group analysis")
+
+
 class GenerationResponse(BaseModel):
     """Response from synthetic data generation."""
 
